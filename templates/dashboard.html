@@ -1,0 +1,158 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mt-4">
+  <!-- Tarjetas de totales -->
+  <div class="row g-4">
+    <div class="col-md-3">
+      <div
+        class="card card-hover shadow-sm border-0 p-3 text-center h-100"
+        style="
+          background: linear-gradient(135deg, #006d6a 0%, #00a19c 100%);
+          color: white;
+        "
+      >
+        <h6>Créditos Nuevos</h6>
+        <p class="display-5 fw-bold">{{ data.nuevos_creditos }}</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div
+        class="card card-hover shadow-sm border-0 p-3 text-center h-100"
+        style="
+          background: linear-gradient(135deg, #3c3c51 0%, #20202b 100%);
+          color: white;
+        "
+      >
+        <h6>Créditos Desembolsados</h6>
+        <p class="display-5 fw-bold">{{ data.total_desembolsados }}</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6>Análisis estadístico</h6>
+        <p>
+          Monto promedio de los créditos:
+          <strong>{{ data.monto_promedio }}</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficas principales -->
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6 col-md-12">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="mb-3">Créditos por Ciudad</h6>
+        <canvas id="ciudadesChart"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-12">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="mb-3">Créditos por Promotor</h6>
+        <canvas id="promotoresChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nuevas gráficas -->
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6 col-md-12">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="mb-3">Créditos aprobados por Mesa de Control</h6>
+        <canvas id="usuariosChart"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-12">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="mb-3">Flujo de créditos - $</h6>
+        <canvas id="flujoChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-3">
+    <div class="col-lg-6 col-md-12">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="mb-3">Horarios de Autorización</h6>
+        <canvas id="horasChart"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-12">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="mb-3">Empresas más frecuentes</h6>
+        <ol>
+          {% for label, value in data.empresas_list %}
+          <li>{{ label }}: {{ value }} créditos</li>
+          {% endfor %}
+        </ol>
+        <canvas id="empresasChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ciudadesLabels = {{ data.ciudades_labels|tojson|safe }};
+  const ciudadesValues = {{ data.ciudades_values|tojson|safe }};
+  const promotoresLabels = {{ data.promotores_labels|tojson|safe }};
+  const promotoresValues = {{ data.promotores_values|tojson|safe }};
+  const usuariosLabels = {{ data.usuarios_labels|tojson|safe }};
+  const usuariosValues = {{ data.usuarios_values|tojson|safe }};
+  const flujoLabels = {{ data.flujo_labels|tojson|safe }};
+  const flujoValues = {{ data.flujo_values|tojson|safe }};
+  const horasLabels = {{ data.horas_labels|tojson|safe }};
+  const horasValues = {{ data.horas_values|tojson|safe }};
+  const empresasLabels = {{ data.empresas_labels|tojson|safe }};
+  const empresasValues = {{ data.empresas_values|tojson|safe }};
+
+  function createGradient(ctx, colorStart, colorEnd) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, colorStart);
+    gradient.addColorStop(1, colorEnd);
+    return gradient;
+  }
+
+  // Créditos por Ciudad
+  new Chart(document.getElementById("ciudadesChart").getContext("2d"), {
+    type: "bar",
+    data: { labels: ciudadesLabels, datasets: [{ label: "Créditos por ciudad", data: ciudadesValues, backgroundColor: createGradient(document.getElementById("ciudadesChart").getContext("2d"), "#36D1DC", "#5B86E5"), borderColor: "#5B86E5", borderWidth: 1, borderRadius: 6 }] },
+    options: { responsive: true, plugins: { legend: { display: false }, tooltip: { mode: "index", intersect: false } }, scales: { y: { beginAtZero: true } }, animation: { duration: 1200, easing: 'easeOutQuart' } }
+  });
+
+  // Créditos por Promotor
+  new Chart(document.getElementById("promotoresChart").getContext("2d"), {
+    type: "bar",
+    data: { labels: promotoresLabels, datasets: [{ label: "Créditos por promotor", data: promotoresValues, backgroundColor: createGradient(document.getElementById("promotoresChart").getContext("2d"), "#F7971E", "#FFD200"), borderColor: "#F7971E", borderWidth: 1, borderRadius: 6 }] },
+    options: { responsive: true, plugins: { legend: { display: false }, tooltip: { mode: "index", intersect: false } }, scales: { y: { beginAtZero: true } }, animation: { duration: 1200, easing: 'easeOutQuart' } }
+  });
+
+  // Créditos aprobados por usuario
+  new Chart(document.getElementById("usuariosChart").getContext("2d"), {
+    type: 'bar',
+    data: { labels: usuariosLabels, datasets: [{ label: 'Créditos aprobados', data: usuariosValues, backgroundColor: '#4BC0C0' }] },
+    options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } }, animation: { duration: 1200, easing: 'easeOutQuart' } }
+  });
+
+  // Flujo de créditos
+  new Chart(document.getElementById("flujoChart").getContext("2d"), {
+    type: 'line',
+    data: { labels: flujoLabels, datasets: [{ label: 'Flujo neto', data: flujoValues, borderColor: '#00a19c', backgroundColor: 'rgba(255,99,132,0.2)', tension: 0.4, fill: true }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, animation: { duration: 1200, easing: 'easeOutQuart' }, scales: { y: { beginAtZero: false } } }
+  });
+
+  // Horarios de autorización
+  new Chart(document.getElementById("horasChart").getContext("2d"), {
+    type: 'bar',
+    data: { labels: horasLabels, datasets: [{ label: 'Créditos por hora', data: horasValues, backgroundColor: '#36A2EB' }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }, animation: { duration: 1200, easing: 'easeOutQuart' } }
+  });
+
+  // Empresas más frecuentes (barra horizontal)
+  new Chart(document.getElementById("empresasChart").getContext("2d"), {
+    type: 'bar',
+    data: { labels: empresasLabels, datasets: [{ label: 'Créditos por empresa', data: empresasValues, backgroundColor: '#FF9F40' }] },
+    options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } }, animation: { duration: 1200, easing: 'easeOutQuart' } }
+  });
+</script>
+{% endblock %}
