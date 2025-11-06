@@ -4,6 +4,7 @@ from werkzeug.security import check_password_hash
 from forms.forms import LoginForm
 from services.auth_service import get_user_by_username
 
+
 auth_bp = Blueprint('auth', __name__)
 
 

@@ -34,6 +34,9 @@
           <ul class="navbar-nav ms-auto">
             {% if current_user.is_authenticated %}
             <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('daily.daily') }}">Diario</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}"
                 >Dashboard</a
               >

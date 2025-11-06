@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block content %}
+<!-- Tarjetas de totales -->
+<h2>{{data.fecha_actual}} - Resumen Diario</h2>
+<div class="row g-4">
+  <div class="col-md-3">
+    <div
+      class="card card-hover shadow-sm border-0 p-3 text-center h-100"
+      style="
+        background: linear-gradient(135deg, #006d6a 0%, #00a19c 100%);
+        color: white;
+      "
+    >
+      <h6>Créditos Nuevos hoy}</h6>
+      <p class="display-5 fw-bold">{{ data.nuevos_creditos }}</p>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div
+      class="card card-hover shadow-sm border-0 p-3 text-center h-100"
+      style="
+        background: linear-gradient(135deg, #3c3c51 0%, #20202b 100%);
+        color: white;
+      "
+    >
+      <h6>Créditos Desembolsados hoy</h6>
+      <p class="display-5 fw-bold">{{ data.total_desembolsados }}</p>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 p-3 h-100">
+      <h6>Análisis estadístico</h6>
+      <p>
+        Monto promedio de los créditos:
+        <strong>{{ data.monto_promedio }}</strong>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

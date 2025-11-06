@@ -1,9 +1,10 @@
 from flask import Flask, redirect, url_for
 from flask_login import LoginManager, current_user
 from models.models import db, User
-from routes.auth import auth_bp    # Blueprint para autenticación
-from routes.dashboard import dashboard_bp  # Blueprint para tareas
-from routes.etl import etl_bp  # Blueprint para ETL
+from routes.auth import auth_bp
+from routes.dashboard import dashboard_bp 
+from routes.etl import etl_bp
+from routes.daily import daily_bp
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 from services.auth_service import create_user
@@ -46,12 +47,18 @@ def create_app():
     @app.route("/")
     def index():
         if current_user.is_authenticated:
-            return redirect(url_for('dashboard.dashboard'))
+            return redirect(url_for('daily.daily'))
         return redirect(url_for('auth.login'))
+    
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return redirect(url_for('daily.daily'))
+    
 
     # Registrar Blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
+    app.register_blueprint(daily_bp, url_prefix='/daily')
     app.register_blueprint(etl_bp, url_prefix='/etl')
 
     return app
