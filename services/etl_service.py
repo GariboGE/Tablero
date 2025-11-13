@@ -5,9 +5,12 @@ from sqlalchemy.exc import IntegrityError
 
 def parse_date(val):
     try:
-        return pd.to_datetime(val, errors = "coerce").date() if pd.notna(val) else None
+        if pd.notna(val):
+            return pd.to_datetime(val, dayfirst=True, errors="coerce").date()
+        return None
     except Exception:
         return None
+
 
 
 def parse_time(val):
@@ -16,8 +19,6 @@ def parse_time(val):
     except Exception:
         return None
 
-
-from sqlalchemy.exc import IntegrityError
 
 def import_csv_to_db(df: pd.DataFrame, session=None):
     """

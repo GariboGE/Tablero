@@ -7,7 +7,6 @@ from routes.etl import etl_bp
 from routes.daily import daily_bp
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
-from services.auth_service import create_user
 import os
 
 load_dotenv()
