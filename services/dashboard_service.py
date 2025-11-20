@@ -136,6 +136,9 @@ def get_dashboard_data(
     horas_sorted = sorted(horas_counter.items())
     horas_labels_final = [h[0] for h in horas_sorted]
     horas_values_final = [h[1] for h in horas_sorted]
+    
+    # Monto a disponer suma
+    monto_total = query.with_entities(func.sum(Credit.monto_disponer)).scalar() or 0
 
     # Estadísticas de montos
     monto_promedio = query.with_entities(func.avg(Credit.monto_disponer)).scalar()
@@ -153,7 +156,7 @@ def get_dashboard_data(
     return {
         "filtros": {
             "fecha_inicio": try_parse_date(fecha_inicio),
-            "fecha_fin|": try_parse_date(fecha_fin),
+            "fecha_fin": try_parse_date(fecha_fin),
             "promotor": promotor,
             "empresa": empresa,
             "sucursal": sucursal,
@@ -177,6 +180,7 @@ def get_dashboard_data(
         "horas_labels": horas_labels_final,
         "horas_values": horas_values_final,
         "monto_promedio": round(monto_promedio, 2) if monto_promedio else 0,
+        "monto_total" : monto_total,
         "monto_mas_chico": monto_mas_chico,
         "monto_mas_grande": monto_mas_grande,
         "usuarios_mas2": usuarios_mas2,

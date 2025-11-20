@@ -8,8 +8,9 @@ daily_bp = Blueprint('daily', __name__)
 
 @daily_bp.route('/daily', methods=['GET', 'POST'])
 def daily():
-    if current_user.is_authenticated:
-        data = get_daily_data()
-        return render_template('daily.html', data=data)
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login'))
     
-    return redirect(url_for('auth.login'))
+    data = get_daily_data()
+    return render_template('daily.html', data=data)
+    

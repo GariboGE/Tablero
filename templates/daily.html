@@ -1,38 +1,119 @@
 {% extends "base.html" %} {% block content %}
-<!-- Tarjetas de totales -->
-<h2>{{data.fecha_actual}} - Resumen Diario</h2>
-<div class="row g-4">
-  <div class="col-md-3">
-    <div
-      class="card card-hover shadow-sm border-0 p-3 text-center h-100"
-      style="
-        background: linear-gradient(135deg, #006d6a 0%, #00a19c 100%);
-        color: white;
-      "
-    >
-      <h6>Créditos Nuevos hoy</h6>
-      <p class="display-5 fw-bold">{{ data.nuevos_creditos }}</p>
+
+<style>
+  .metric-card {
+    border-radius: 16px;
+    padding: 25px;
+    color: white;
+    text-align: center;
+  }
+  .metric-number {
+    font-size: 2.3rem;
+    font-weight: bold;
+  }
+  .section-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+  }
+  .data-box {
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+</style>
+
+<div class="container-fluid mt-3">
+  <!-- =============================== -->
+  <!--          TITULO + FECHA        -->
+  <!-- =============================== -->
+  <h2 class="fw-bold">Resumen Diario – {{ data.fecha_actual }}</h2>
+
+  <!-- =============================== -->
+  <!--        PROGRESO DIARIO         -->
+  <!-- =============================== -->
+  <div class="card p-4 shadow-sm mt-3 mb-4">
+    <h4 class="mb-2">Progreso diario</h4>
+
+    <div class="progress" style="height: 26px">
+      <div
+        class="progress-bar bg-success"
+        role="progressbar"
+        style="width: {{ data.avance }}%;"
+      >
+        {{ data.avance|round(1) }}%
+      </div>
+    </div>
+
+    <p class="mt-2 mb-0">
+      Acumulado: <strong>${{ "{:,.0f}".format(data.total_monto) }}</strong> /
+      Meta: <strong>${{ "{:,.0f}".format(data.meta_diaria) }}</strong>
+    </p>
+  </div>
+
+  <!-- =============================== -->
+  <!--       CARDS PRINCIPALES        -->
+  <!-- =============================== -->
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div
+        class="metric-card shadow-sm"
+        style="background: linear-gradient(135deg, #006d6a 0%, #00a19c 100%)"
+      >
+        <h6>Total Créditos</h6>
+        <div class="metric-number">{{ data.total_creditos }}</div>
+      </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div
-      class="card card-hover shadow-sm border-0 p-3 text-center h-100"
-      style="
-        background: linear-gradient(135deg, #3c3c51 0%, #20202b 100%);
-        color: white;
-      "
-    >
-      <h6>Créditos Desembolsados hoy</h6>
-      <p class="display-5 fw-bold">{{ data.total_desembolsados }}</p>
+
+  <!-- =============================== -->
+  <!--      DESGLOSES POR CATEGORÍA   -->
+  <!-- =============================== -->
+  <div class="row mt-5 g-4">
+    <!-- SUCURSALES -->
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3">
+        <h5 class="section-title">Monto por Sucursal</h5>
+
+        {% for s in data.sucursales %}
+        <div class="data-box">
+          <strong>{{ s[0] or 'Sin sucursal' }}</strong><br />
+          Monto: <strong>${{ "{:,.0f}".format(s[1]) }}</strong><br />
+          Créditos: <strong>{{ s[2] }}</strong>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-  </div>
-  <div class="col-md-6">
-    <div class="card shadow-sm border-0 p-3 h-100">
-      <h6>Análisis estadístico</h6>
-      <p>
-        Monto promedio de los créditos:
-        <strong>{{ data.monto_promedio }}</strong>
-      </p>
+
+    <!-- EMPRESAS -->
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3">
+        <h5 class="section-title">Monto por Empresa</h5>
+
+        {% for e in data.empresas %}
+        <div class="data-box">
+          <strong>{{ e[0] or 'Sin empresa' }}</strong><br />
+          Monto: <strong>${{ "{:,.0f}".format(e[1]) }}</strong><br />
+          Créditos: <strong>{{ e[2] }}</strong>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- PROMOTORES -->
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3">
+        <h5 class="section-title">Monto por Promotor</h5>
+
+        {% for p in data.promotores %}
+        <div class="data-box">
+          <strong>{{ p[0] or 'Sin promotor' }}</strong><br />
+          Monto: <strong>${{ "{:,.0f}".format(p[1]) }}</strong><br />
+          Créditos: <strong>{{ p[2] }}</strong>
+        </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>

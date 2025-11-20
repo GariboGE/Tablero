@@ -13,7 +13,6 @@
           id="fecha_inicio"
           name="fecha_inicio"
           value="{{ request.args.get('fecha_inicio', data.fecha_default_inicio) }}"
-
         />
       </div>
 
@@ -90,21 +89,21 @@
   <div class="row g-4">
     <div class="col-md-3">
       <div class="card card-hover shadow-sm border-0 p-3 text-center h-100"
-           style="background: linear-gradient(135deg, #006d6a 0%, #00a19c 100%); color: white;">
+           style="background: linear-gradient(135deg, #00a19c 0%, #006d6a 100%); color: white;">
         <h6>Créditos Nuevos</h6>
         <p class="display-5 fw-bold">{{ data.nuevos_creditos }}</p>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card card-hover shadow-sm border-0 p-3 text-center h-100"
-           style="background: linear-gradient(135deg, #3c3c51 0%, #20202b 100%); color: white;">
+           style="background: linear-gradient(135deg, #373741 0%, #20202b 100%); color: white;">
         <h6>Créditos Desembolsados</h6>
         <p class="display-5 fw-bold">{{ data.total_desembolsados }}</p>
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card shadow-sm border-0 p-3 h-100">
-        <h6>Análisis estadístico</h6>
+      <div class="card shadow-sm border-0 p-3 h-100" style="background-color: #d4efee;">
+        <h6 class="mb-3" style="color:#373741;">Análisis estadístico</h6>
         <p>Monto promedio: <strong>{{ data.monto_promedio }}</strong></p>
         <p>Monto mayor: <strong>{{ data.monto_mas_grande }}</strong></p>
         <p>Monto menor: <strong>{{ data.monto_mas_chico }}</strong></p>
@@ -114,16 +113,46 @@
 
   <!-- Gráficas -->
   <div class="row g-4 mt-3">
-    <div class="col-lg-6"><div class="card shadow-sm border-0 p-3 h-100"><h6>Créditos por Ciudad</h6><canvas id="ciudadesChart"></canvas></div></div>
-    <div class="col-lg-6"><div class="card shadow-sm border-0 p-3 h-100"><h6>Créditos por Promotor</h6><canvas id="promotoresChart"></canvas></div></div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6>Créditos por Ciudad</h6>
+        <canvas id="ciudadesChart"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6>Créditos por Promotor</h6>
+        <canvas id="promotoresChart"></canvas>
+      </div>
+    </div>
   </div>
   <div class="row g-4 mt-3">
-    <div class="col-lg-6"><div class="card shadow-sm border-0 p-3 h-100"><h6>Aprobados por Mesa de Control</h6><canvas id="usuariosChart"></canvas></div></div>
-    <div class="col-lg-6"><div class="card shadow-sm border-0 p-3 h-100"><h6>Flujo de Créditos</h6><canvas id="flujoChart"></canvas></div></div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6>Aprobados por Mesa de Control</h6>
+        <canvas id="usuariosChart"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6>Flujo de Créditos</h6>
+        <canvas id="flujoChart"></canvas>
+      </div>
+    </div>
   </div>
   <div class="row g-4 mt-3">
-    <div class="col-lg-6"><div class="card shadow-sm border-0 p-3 h-100"><h6>Horarios de Autorización</h6><canvas id="horasChart"></canvas></div></div>
-    <div class="col-lg-6"><div class="card shadow-sm border-0 p-3 h-100"><h6>Empresas más frecuentes</h6><canvas id="empresasChart"></canvas></div></div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6>Horarios de Autorización</h6>
+        <canvas id="horasChart"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6>Empresas más frecuentes</h6>
+        <canvas id="empresasChart"></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -131,37 +160,164 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   const charts = {
-    ciudades: { labels: {{ data.ciudades_labels|tojson|safe }}, values: {{ data.ciudades_values|tojson|safe }}, color1: "#36D1DC", color2: "#5B86E5" },
-    promotores: { labels: {{ data.promotores_labels|tojson|safe }}, values: {{ data.promotores_values|tojson|safe }}, color1: "#F7971E", color2: "#FFD200" },
-    usuarios: { labels: {{ data.usuarios_labels|tojson|safe }}, values: {{ data.usuarios_values|tojson|safe }}, color1: "#4BC0C0" },
-    flujo: { labels: {{ data.flujo_labels|tojson|safe }}, values: {{ data.flujo_values|tojson|safe }}, color1: "#00a19c" },
-    horas: { labels: {{ data.horas_labels|tojson|safe }}, values: {{ data.horas_values|tojson|safe }}, color1: "#36A2EB" },
-    empresas: { labels: {{ data.empresas_labels|tojson|safe }}, values: {{ data.empresas_values|tojson|safe }}, color1: "#FF9F40" }
+    ciudades: {
+      labels: {{ data.ciudades_labels|tojson|safe }},
+      values: {{ data.ciudades_values|tojson|safe }},
+      color1: "#00a19c",
+      color2: "#d4efee"
+    },
+    promotores: {
+      labels: {{ data.promotores_labels|tojson|safe }},
+      values: {{ data.promotores_values|tojson|safe }},
+      color1: "#00a19c",
+      color2: "#d4efee"
+    },
+    usuarios: {
+      labels: {{ data.usuarios_labels|tojson|safe }},
+      values: {{ data.usuarios_values|tojson|safe }},
+      color1: "#373741"
+    },
+    flujo: {
+      labels: {{ data.flujo_labels|tojson|safe }},
+      values: {{ data.flujo_values|tojson|safe }},
+      color1: "#00a19c"
+    },
+    horas: {
+      labels: {{ data.horas_labels|tojson|safe }},
+      values: {{ data.horas_values|tojson|safe }},
+      color1: "#00a19c"
+    },
+    empresas: {
+      labels: {{ data.empresas_labels|tojson|safe }},
+      values: {{ data.empresas_values|tojson|safe }},
+      color1: "#00a19c"
+    }
   };
 
-  const createGradient = (ctx, c1, c2) => { const g = ctx.createLinearGradient(0, 0, 0, 400); g.addColorStop(0, c1); g.addColorStop(1, c2); return g; };
+  const createGradient = (ctx, c1, c2) => {
+    const g = ctx.createLinearGradient(0, 0, 0, 400);
+    g.addColorStop(0, c1);
+    g.addColorStop(1, c2);
+    return g;
+  };
+
   const chartConfig = (ctx, type, data, label, color1, color2=null, yAxis='y') => ({
-    type, data: { labels: data.labels, datasets: [{ label, data: data.values, backgroundColor: color2 ? createGradient(ctx, color1, color2) : color1, borderColor: color1, borderWidth: 1, borderRadius: 6 }] },
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { [yAxis]: { beginAtZero: true } } }
+    type,
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label,
+        data: data.values,
+        backgroundColor: color2 ? createGradient(ctx, color1, color2) : color1,
+        borderColor: "#373741",
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { [yAxis]: { beginAtZero: true } }
+    }
   });
 
-  new Chart(document.getElementById("ciudadesChart").getContext("2d"), chartConfig(document.getElementById("ciudadesChart").getContext("2d"), 'bar', charts.ciudades, "Créditos por Ciudad", charts.ciudades.color1, charts.ciudades.color2));
-  new Chart(document.getElementById("promotoresChart").getContext("2d"), chartConfig(document.getElementById("promotoresChart").getContext("2d"), 'bar', charts.promotores, "Créditos por Promotor", charts.promotores.color1, charts.promotores.color2));
-  new Chart(document.getElementById("usuariosChart").getContext("2d"), chartConfig(document.getElementById("usuariosChart").getContext("2d"), 'bar', charts.usuarios, "Créditos Aprobados", charts.usuarios.color1));
-  new Chart(document.getElementById("flujoChart").getContext("2d"), { type: 'line', data: { labels: charts.flujo.labels, datasets: [{ label: 'Flujo Neto', data: charts.flujo.values, borderColor: charts.flujo.color1, tension: 0.4, fill: true }] }, options: { responsive: true }});
-  new Chart(document.getElementById("horasChart").getContext("2d"), chartConfig(document.getElementById("horasChart").getContext("2d"), 'bar', charts.horas, "Créditos por Hora", charts.horas.color1));
+  // Ciudades: barras verticales
+  const ctxCiudades = document.getElementById("ciudadesChart").getContext("2d");
   new Chart(
-    document.getElementById("empresasChart").getContext("2d"),
-    chartConfig(
-      document.getElementById("empresasChart").getContext("2d"),
-      'bar',
-      {
-        labels: charts.empresas.labels.slice(0, 8),
-        values: charts.empresas.values.slice(0, 8)
-      },
-      "Créditos por Empresa",
-      charts.empresas.color1
-    )
+    ctxCiudades,
+    chartConfig(ctxCiudades, 'bar', charts.ciudades, "Créditos por Ciudad", charts.ciudades.color1, charts.ciudades.color2)
   );
+
+  // Promotores: barras HORIZONTALES
+  const ctxPromotores = document.getElementById("promotoresChart").getContext("2d");
+  new Chart(ctxPromotores, {
+    type: 'bar',
+    data: {
+      labels: charts.promotores.labels,
+      datasets: [{
+        label: "Créditos por Promotor",
+        data: charts.promotores.values,
+        backgroundColor: createGradient(ctxPromotores, charts.promotores.color1, charts.promotores.color2),
+        borderColor: "#373741",
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true },
+        y: { ticks: { autoSkip: false } }
+      }
+    }
+  });
+
+  // Usuarios: barras verticales
+  const ctxUsuarios = document.getElementById("usuariosChart").getContext("2d");
+  new Chart(
+    ctxUsuarios,
+    chartConfig(ctxUsuarios, 'bar', charts.usuarios, "Créditos Aprobados", charts.usuarios.color1)
+  );
+
+  // Flujo: línea
+  const ctxFlujo = document.getElementById("flujoChart").getContext("2d");
+  new Chart(ctxFlujo, {
+    type: 'line',
+    data: {
+      labels: charts.flujo.labels,
+      datasets: [{
+        label: 'Flujo Neto',
+        data: charts.flujo.values,
+        borderColor: charts.flujo.color1,
+        backgroundColor: "rgba(0, 161, 156, 0.1)",
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // Horas: barras verticales
+  const ctxHoras = document.getElementById("horasChart").getContext("2d");
+  new Chart(
+    ctxHoras,
+    chartConfig(ctxHoras, 'bar', charts.horas, "Créditos por Hora", charts.horas.color1)
+  );
+
+  // Empresas: barras HORIZONTALES (top 8)
+  const ctxEmpresas = document.getElementById("empresasChart").getContext("2d");
+  const empresasTop = {
+    labels: charts.empresas.labels.slice(0, 8),
+    values: charts.empresas.values.slice(0, 8)
+  };
+
+  new Chart(ctxEmpresas, {
+    type: 'bar',
+    data: {
+      labels: empresasTop.labels,
+      datasets: [{
+        label: "Créditos por Empresa",
+        data: empresasTop.values,
+        backgroundColor: charts.empresas.color1,
+        borderColor: "#373741",
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true },
+        y: { ticks: { autoSkip: false } }
+      }
+    }
+  });
 </script>
 {% endblock %}
