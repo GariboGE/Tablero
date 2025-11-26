@@ -71,7 +71,7 @@ def get_dashboard_data(
 
     # Créditos nuevos
     nuevos_creditos = query.filter(
-        Credit.clasificacion_credito.in_(["Nuevo Cliente", "Nuevo Cliente Compra de deuda"])
+        Credit.clasificacion_credito.in_(["Nuevo Cliente", "Nuevo Cliente Compra de deuda", "Nuevo Credito Compra de deuda"])
     ).count()
 
     # Créditos desembolsados totales (en el rango)

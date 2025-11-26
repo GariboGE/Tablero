@@ -6,7 +6,7 @@ from collections import Counter
 META_DIARIA = 500000
 
 def get_daily_data():
-    hoy = datetime.now().date() - timedelta(days=1)
+    hoy = datetime.now().date()
 
     # Filtro base: créditos desembolsados hoy y válidos
     filtro_base = and_(
