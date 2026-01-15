@@ -1,61 +1,31 @@
-{% extends 'base.html' %} {% block title %}Carga de CSV{% endblock %} {% block
-content %}
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-body p-5">
-          <h2 class="text-center mb-4">📂 Cargar archivo CSV</h2>
-          <p class="text-muted text-center mb-4">
-            Sube un archivo CSV para cargar los datos a la base de datos.
-          </p>
+{% extends "base.html" %} {% block title %}Carga de CSV{% endblock %} {% block
+top_title %}Carga de CSV{% endblock %} {% block top_subtitle %}Alimenta el
+dashboard con nuevos datos{% endblock %} {% block content %}
 
-          {# Mensajes flash de éxito o error #} {% with messages =
-          get_flashed_messages(with_categories=true) %} {% if messages %} {% for
-          category, message in messages %}
-          <div
-            class="alert alert-{{ category }} alert-dismissible fade show"
-            role="alert"
-          >
-            {{ message }}
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="alert"
-              aria-label="Close"
-            ></button>
-          </div>
-          {% endfor %} {% endif %} {% endwith %}
-
-          <form
-            method="POST"
-            enctype="multipart/form-data"
-            onsubmit="showLoader()"
-          >
-            {{ form.hidden_tag() }}
-            <div class="mb-4">
-              {{ form.csv.label(class="form-label fw-semibold") }} {{
-              form.csv(class="form-control") }}
-            </div>
-
-            <button type="submit" class="btn btn-primary">Subir</button>
-          </form>
-
-          {# Loader Spinner oculto hasta que el formulario se envía #}
-          <div
-            id="loading-spinner"
-            class="text-center mt-4"
-            style="display: none"
-          >
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-3 text-muted">
-              Procesando archivo, por favor espera...
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="card" style="max-width: 620px; margin: 0 auto">
+  <div class="card-header-row">
+    <div class="card-title">Selecciona el archivo</div>
   </div>
+
+  {# Mensajes flash ya se renderizan en base.html, aquí solo extra si quieres #}
+
+  <form method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+    {{ form.hidden_tag() }}
+
+    <div class="form-field mb-3">
+      {{ form.csv.label(class="") }} {{ form.csv(class="input-control") }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Subir archivo</button>
+
+    <div
+      id="loading-spinner"
+      class="mt-3 text-muted"
+      style="display: none; font-size: 0.9rem"
+    >
+      <span>Procesando archivo, por favor espera…</span>
+    </div>
+  </form>
 </div>
 
 <script>

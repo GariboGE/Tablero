@@ -1,72 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Credinspira Dasboard{% endblock %}</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <title>{% block title %}Credinspira Dashboard{% endblock %}</title>
+
+    <!-- Iconos (Font Awesome) -->
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/styles.css') }}"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     />
+
+    <link rel="stylesheet" href="../static\css\styles.css" />
+
+    {% block extra_head %}{% endblock %}
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url_for('dashboard.dashboard') }}"
-          >Credinspira Dasboard</a
-        >
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            {% if current_user.is_authenticated %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('daily.daily') }}">Diario</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}"
-                >Dashboard</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('etl.etl') }}">ETL</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
-            </li>
-            {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
-            </li>
-            {% endif %}
-          </ul>
+    <div class="layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <span class="sidebar-logo-text">Credinspira</span>
         </div>
-      </div>
-    </nav>
 
-    <div class="container mt-4">
-      {% with messages = get_flashed_messages() %} {% if messages %}
-      <div class="alert alert-info">
-        {% for message in messages %}
-        <p>{{ message }}</p>
-        {% endfor %}
+        {% if current_user.is_authenticated %}
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="sidebar-nav">
+            <a
+              href="{{ url_for('daily.daily') }}"
+              class="sidebar-link {% if request.endpoint == 'daily.daily' %}active{% endif %}"
+            >
+              <span class="sidebar-link-icon"
+                ><i class="fa-regular fa-calendar-days"></i
+              ></span>
+              <span class="sidebar-link-text">Resumen diario</span>
+            </a>
+
+            <a
+              href="{{ url_for('dashboard.dashboard') }}"
+              class="sidebar-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}"
+            >
+              <span class="sidebar-link-icon"
+                ><i class="fa-solid fa-chart-pie"></i
+              ></span>
+              <span class="sidebar-link-text">Dashboard</span>
+            </a>
+
+            <a
+              href="{{ url_for('etl.etl') }}"
+              class="sidebar-link {% if request.endpoint == 'etl.etl' %}active{% endif %}"
+            >
+              <span class="sidebar-link-icon"
+                ><i class="fa-solid fa-database"></i
+              ></span>
+              <span class="sidebar-link-text">ETL / Carga CSV</span>
+            </a>
+
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+              <span class="sidebar-link-icon"
+                ><i class="fa-solid fa-right-from-bracket"></i
+              ></span>
+              <span class="sidebar-link-text">Salir</span>
+            </a>
+          </nav>
+        </div>
+        {% else %}
+        <div>
+          <div class="sidebar-section-title">Acceso</div>
+          <nav class="sidebar-nav">
+            <a
+              href="{{ url_for('auth.login') }}"
+              class="sidebar-link {% if request.endpoint == 'auth.login' %}active{% endif %}"
+            >
+              <span class="sidebar-link-icon"
+                ><i class="fa-solid fa-key"></i
+              ></span>
+              <span class="sidebar-link-text">Login</span>
+            </a>
+          </nav>
+        </div>
+        {% endif %}
+      </aside>
+
+      <!-- MAIN -->
+      <div class="main">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button
+              type="button"
+              class="sidebar-toggle"
+              id="sidebarToggle"
+              aria-label="Toggle sidebar"
+            >
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="topbar-titles">
+              <div class="topbar-title">
+                {% block top_title %}Dashboard{% endblock %}
+              </div>
+              <div class="topbar-subtitle">
+                {% block top_subtitle %}Resumen de indicadores{% endblock %}
+              </div>
+            </div>
+          </div>
+
+          {% if current_user.is_authenticated %}
+          <div class="topbar-right">
+            <div class="user-pill">
+              <div class="user-avatar">
+                {{ (current_user.name or 'CU')[0]|upper if current_user is
+                defined else 'U' }}
+              </div>
+              <div>
+                <div style="font-size: 0.8rem">
+                  {{ current_user.name or 'Usuario' }}
+                </div>
+                <div class="text-muted" style="font-size: 0.75rem">Admin</div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </header>
+
+        <main class="main-scroll">
+          <main class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %} {%
+            if messages %} {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %} {% endif %} {% endwith %} {% block content %}{%
+            endblock %}
+          </main>
+        </main>
       </div>
-      {% endif %} {% endwith %} {% block content %}{% endblock %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const sidebar = document.getElementById("sidebar");
+      const toggleBtn = document.getElementById("sidebarToggle");
+
+      toggleBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+
+        // Guardar estado en localStorage para recordar la preferencia
+        const isCollapsed = sidebar.classList.contains("collapsed");
+        try {
+          localStorage.setItem("sidebarCollapsed", isCollapsed ? "1" : "0");
+        } catch (e) {}
+      });
+
+      // Restaurar estado
+      (function restoreSidebarState() {
+        try {
+          const value = localStorage.getItem("sidebarCollapsed");
+          if (value === "1") {
+            sidebar.classList.add("collapsed");
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
   </body>
 </html>

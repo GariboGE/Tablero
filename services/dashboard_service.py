@@ -1,6 +1,5 @@
-from sqlalchemy import func, and_
+from sqlalchemy import func
 from datetime import datetime
-from collections import Counter
 from models.models import Credit, db
 from dateutil import parser
 
@@ -90,6 +89,7 @@ def get_dashboard_data(
     promotores = (
         query.with_entities(Credit.promotor, func.count(Credit.id))
         .group_by(Credit.promotor)
+        .order_by(func.count(Credit.id).desc())
         .all()
     )
     promotores_labels = [p[0] for p in promotores]
@@ -105,38 +105,28 @@ def get_dashboard_data(
     empresas_labels = [e[0] for e in empresas]
     empresas_values = [e[1] for e in empresas]
 
-    # Créditos aprobados por usuario de mesa de control
-    usuarios = (
-        query.with_entities(Credit.usuario_mesa_control, func.count(Credit.id))
-        .group_by(Credit.usuario_mesa_control)
-        .all()
-    )
-    usuarios_labels = [u[0] for u in usuarios]
-    usuarios_values = [u[1] for u in usuarios]
-
-    # Flujo de desembolsos e intereses
+    # Flujo de desembolsos (solo montos a disponer por día, sin intereses)
     flujo = (
         query.with_entities(
             Credit.fecha_desembolso,
             Credit.monto_disponer,
-            Credit.monto_disponer * (1 + Credit.nInterestRateM / 100),
         )
         .all()
     )
-    flujo_sorted = sorted([f for f in flujo if f[0] is not None], key=lambda x: x[0])
-    flujo_labels = [x[0].strftime("%Y-%m-%d") for x in flujo_sorted]
-    flujo_values = [-x[1] for x in flujo_sorted]
-    flujo_intereses = [x[2] for x in flujo_sorted]
-    flujo_values_final = [neg + pos for neg, pos in zip(flujo_values, flujo_intereses)]
 
-    # Horarios de autorización
-    horarios = query.with_entities(Credit.horario_autorizacion).all()
-    horas_labels = [h[0].hour for h in horarios if h[0] is not None]
-    horas_counter = Counter(horas_labels)
-    horas_sorted = sorted(horas_counter.items())
-    horas_labels_final = [h[0] for h in horas_sorted]
-    horas_values_final = [h[1] for h in horas_sorted]
-    
+    # Agrupar por día en Python (suma de monto_disponer por fecha)
+    montos_por_dia = {}
+    for fecha, monto in flujo:
+        if fecha is None:
+            continue
+        clave = fecha.strftime("%Y-%m-%d")
+        montos_por_dia[clave] = montos_por_dia.get(clave, 0) + (monto or 0)
+
+    # Ordenar por fecha
+    flujo_labels = sorted(montos_por_dia.keys())
+    flujo_values_final = [montos_por_dia[fecha] for fecha in flujo_labels]
+
+
     # Monto a disponer suma
     monto_total = query.with_entities(func.sum(Credit.monto_disponer)).scalar() or 0
 
@@ -173,12 +163,8 @@ def get_dashboard_data(
         "promotores_values": promotores_values,
         "empresas_labels": empresas_labels,
         "empresas_values": empresas_values,
-        "usuarios_labels": usuarios_labels,
-        "usuarios_values": usuarios_values,
         "flujo_labels": flujo_labels,
         "flujo_values": flujo_values_final,
-        "horas_labels": horas_labels_final,
-        "horas_values": horas_values_final,
         "monto_promedio": round(monto_promedio, 2) if monto_promedio else 0,
         "monto_total" : monto_total,
         "monto_mas_chico": monto_mas_chico,

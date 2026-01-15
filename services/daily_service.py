@@ -1,14 +1,19 @@
 from sqlalchemy import func, and_
 from models.models import Credit, db
 from datetime import datetime, timedelta
-from collections import Counter
 
-META_DIARIA = 500000
+META_MENSUAL = 15000000  # ajusta aquí la meta mensual que quieras
 
 def get_daily_data():
+    # Hoy lo tienes como "ayer"
     hoy = datetime.now().date()
 
-    # Filtro base: créditos desembolsados hoy y válidos
+    # Inicio de mes (para la meta mensual)
+    inicio_mes = hoy.replace(day=1)
+
+    # ------------------------------
+    # 1) Filtro base para el DÍA
+    # ------------------------------
     filtro_base = and_(
         Credit.fecha_desembolso == hoy,
         ~Credit.estatus_credito.in_(["Cancelado", "Cerrado", "Por formalizar"])
@@ -16,11 +21,26 @@ def get_daily_data():
 
     creditos = db.session.query(Credit).filter(filtro_base)
 
-    # Totales diarios
+    # Totales del día
     total_creditos = creditos.count()
     total_monto = creditos.with_entities(func.sum(Credit.monto_disponer)).scalar() or 0
 
-    # Sucursales (monto + créditos)
+    # ------------------------------
+    # 2) Acumulado MENSUAL
+    # ------------------------------
+    filtro_mes = and_(
+        Credit.fecha_desembolso.between(inicio_mes, hoy),
+        ~Credit.estatus_credito.in_(["Cancelado", "Cerrado", "Por formalizar"])
+    )
+
+    creditos_mes = db.session.query(Credit).filter(filtro_mes)
+    total_monto_mes = creditos_mes.with_entities(func.sum(Credit.monto_disponer)).scalar() or 0
+
+    avance_mensual = (total_monto_mes / META_MENSUAL) * 100 if META_MENSUAL else 0
+
+    # ------------------------------
+    # 3) Sucursales (del día)
+    # ------------------------------
     sucursales = (
         creditos
         .with_entities(
@@ -33,7 +53,7 @@ def get_daily_data():
     )
     sucursales = [(s[0], float(s[1]), s[2]) for s in sucursales]
 
-    # Promotores
+    # Promotores (del día)
     promotores = (
         creditos
         .with_entities(
@@ -46,7 +66,7 @@ def get_daily_data():
     )
     promotores = [(p[0], float(p[1]), p[2]) for p in promotores]
 
-    # Empresas
+    # Empresas (del día)
     empresas = (
         creditos
         .with_entities(
@@ -59,16 +79,15 @@ def get_daily_data():
     )
     empresas = [(e[0], float(e[1]), e[2]) for e in empresas]
 
-
     return {
         "fecha_actual": hoy,
         "total_creditos": total_creditos,
-        "total_monto": total_monto,
-        "meta_diaria": META_DIARIA,
-        "avance": (total_monto / META_DIARIA) * 100 if META_DIARIA else 0,
+        "total_monto": total_monto,            # monto SOLO del día
+        "meta_mensual": META_MENSUAL,          # nueva meta
+        "monto_acumulado_mes": total_monto_mes,
+        "avance_mensual": avance_mensual,
 
         "sucursales": sucursales,
         "promotores": promotores,
         "empresas": empresas
     }
-

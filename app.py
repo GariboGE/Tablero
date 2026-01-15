@@ -31,9 +31,9 @@ def create_app():
             admin_user = User(username=admin_username, password=hashed_pw)
             db.session.add(admin_user)
             db.session.commit()
-            print(f"✅ Usuario admin creado: {admin_username}/{admin_password}")
+            print(f"Usuario admin creado: {admin_username}/{admin_password}")
         else:
-            print("ℹ️ Usuario admin ya existe")
+            print("Usuario admin ya existe")
     
     # Login Manager
     login_manager = LoginManager()

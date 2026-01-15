@@ -15,7 +15,7 @@ def login():
         user = get_user_by_username(form.username.data)
         if user and check_password_hash(user.password, form.password.data):
             login_user(user)
-            return redirect(url_for('dashboard.dashboard'))
+            return redirect(url_for('daily.daily'))
         flash('Invalid username or password')
     return render_template('login.html', form=form)
 

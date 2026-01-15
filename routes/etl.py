@@ -6,11 +6,13 @@ from werkzeug.utils import secure_filename
 from forms.forms import CSVForm
 from services.etl_service import import_csv_to_db
 
+
 etl_bp = Blueprint('etl', __name__)
 
 
 @etl_bp.route('/etl', methods=['GET', 'POST'])
 def etl():
+    
     form = CSVForm()
     
     if not current_user.is_authenticated:
@@ -48,9 +50,8 @@ def etl():
     # 🧠 Insertar datos en la base de datos
     try:
         import_csv_to_db(df)
-        flash("✅ Archivo procesado y datos cargados correctamente en la base de datos.", "success")
     except Exception as e:
         flash(f"❌ Error al procesar el CSV: {e}", "danger")
         print(f"[ERROR] Falló la importación del CSV: {e}")
     # 🔁 Redirigir al dashboard
-    return redirect(url_for('dashboard.dashboard'))
+    return redirect(url_for('daily.daily'))

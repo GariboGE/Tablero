@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, request
 from models.models import Credit, db
 from datetime import datetime
 
+
 dashboard_bp = Blueprint('dashboard', __name__)
 
 
@@ -14,7 +15,6 @@ def dashboard():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
         
-    
     today = datetime.now().date()
     fecha_default_inicio = today.replace(day=1)
     fecha_default_fin = today

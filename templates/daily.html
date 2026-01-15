@@ -1,121 +1,140 @@
-{% extends "base.html" %} {% block content %}
-
-<style>
-  .metric-card {
-    border-radius: 16px;
-    padding: 25px;
-    color: white;
-    text-align: center;
-  }
-  .metric-number {
-    font-size: 2.3rem;
-    font-weight: bold;
-  }
-  .section-title {
-    font-weight: 700;
-    font-size: 1.3rem;
-    margin-bottom: 15px;
-  }
-  .data-box {
-    border: 1px solid #ddd;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-</style>
-
-<div class="container-fluid mt-3">
-  <!-- =============================== -->
-  <!--          TITULO + FECHA        -->
-  <!-- =============================== -->
-  <h2 class="fw-bold">Resumen Diario – {{ data.fecha_actual }}</h2>
-
-  <!-- =============================== -->
-  <!--        PROGRESO DIARIO         -->
-  <!-- =============================== -->
-
-  <div class="card p-4 shadow-sm mt-3 mb-4">
-    <h4 class="mb-2">Progreso diario</h4>
-
-    <div class="progress" style="height: 26px">
-      <div
-        class="progress-bar bg-success"
-        role="progressbar"
-        style="width: {{ data.avance }}%;"
-      >
-        {{ data.avance|round(1) }}%
+{% extends "base.html" %} {% block top_title %}Resumen diario{% endblock %} {%
+block top_subtitle %}Resultados del día {{ data.fecha_actual }}{% endblock %} {%
+block content %}
+<!-- Tarjetas principales -->
+<div class="grid grid-3 mb-4">
+  <div class="card">
+    <div class="card-header-row">
+      <div>
+        <div class="card-title">Créditos del día</div>
+        <div class="card-subtitle">Total de créditos desembolsados</div>
       </div>
     </div>
-
-    <p class="mt-2 mb-0">
-      Acumulado: <strong>${{ "{:,.0f}".format(data.total_monto) }}</strong> /
-      Meta: <strong>${{ "{:,.0f}".format(data.meta_diaria) }}</strong>
-    </p>
+    <div class="metric-value">{{ data.total_creditos }}</div>
+    <div class="metric-label text-muted">Créditos</div>
   </div>
 
-  <!-- =============================== -->
-  <!--       CARDS PRINCIPALES        -->
-  <!-- =============================== -->
-  <div class="row g-4">
-    <div class="col-md-4">
-      <div
-        class="metric-card shadow-sm"
-        style="background: linear-gradient(135deg, #006d6a 0%, #00a19c 100%)"
-      >
-        <h6>Total Créditos</h6>
-        <div class="metric-number">{{ data.total_creditos }}</div>
+  <div class="card">
+    <div class="card-header-row">
+      <div>
+        <div class="card-title">Monto total del día</div>
+        <div class="card-subtitle">Suma de todos los créditos</div>
       </div>
     </div>
+    <div class="metric-value">
+      ${{ "{:,.0f}".format(data.total_monto) if data.total_monto is defined else
+      "0" }}
+    </div>
+    <div class="metric-label text-muted">MXN</div>
   </div>
 
-  <!-- =============================== -->
-  <!--      DESGLOSES POR CATEGORÍA   -->
-  <!-- =============================== -->
-  <div class="row mt-5 g-4">
-    <!-- SUCURSALES -->
-    <div class="col-md-4">
-      <div class="card shadow-sm p-3">
-        <h5 class="section-title">Monto por Sucursal</h5>
+  <div class="card-soft">
+    <div class="card-header-row">
+      <div>
+        <div class="card-title">Meta mensual</div>
+        <div class="card-subtitle">Progreso contra la meta</div>
+      </div>
+    </div>
+    <div class="metric-value">
+      {{ data.avance_mensual|round(1) if data.avance_mensual is defined else 0
+      }}%
+    </div>
+    <div class="metric-label">
+      Acumulado:
+      <strong>${{ "{:,.0f}".format(data.monto_acumulado_mes) }}</strong> / Meta:
+      <strong>${{ "{:,.0f}".format(data.meta_mensual) }}</strong>
+    </div>
+    <div
+      class="mt-3"
+      style="
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+      "
+    >
+      <div
+        style="width: {{ data.avance_mensual|round(1) }}%; height: 100%; background: linear-gradient(90deg,#4f46e5,#22c55e);"
+      ></div>
+    </div>
+  </div>
+</div>
 
+<!-- Desgloses -->
+<div class="grid grid-3">
+  <!-- Sucursales -->
+  <div class="card">
+    <div class="card-header-row">
+      <div class="card-title">Monto por sucursal</div>
+    </div>
+    <table class="table-simple">
+      <thead>
+        <tr>
+          <th>Sucursal</th>
+          <th>Monto</th>
+          <th>Créditos</th>
+        </tr>
+      </thead>
+      <tbody>
         {% for s in data.sucursales %}
-        <div class="data-box">
-          <strong>{{ s[0] or 'Sin sucursal' }}</strong><br />
-          Monto: <strong>${{ "{:,.0f}".format(s[1]) }}</strong><br />
-          Créditos: <strong>{{ s[2] }}</strong>
-        </div>
+        <tr>
+          <td>{{ s[0] or 'Sin sucursal' }}</td>
+          <td>${{ "{:,.0f}".format(s[1]) }}</td>
+          <td>{{ s[2] }}</td>
+        </tr>
         {% endfor %}
-      </div>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empresas -->
+  <div class="card">
+    <div class="card-header-row">
+      <div class="card-title">Monto por empresa</div>
     </div>
-
-    <!-- EMPRESAS -->
-    <div class="col-md-4">
-      <div class="card shadow-sm p-3">
-        <h5 class="section-title">Monto por Empresa</h5>
-
+    <table class="table-simple">
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>Monto</th>
+          <th>Créditos</th>
+        </tr>
+      </thead>
+      <tbody>
         {% for e in data.empresas %}
-        <div class="data-box">
-          <strong>{{ e[0] or 'Sin empresa' }}</strong><br />
-          Monto: <strong>${{ "{:,.0f}".format(e[1]) }}</strong><br />
-          Créditos: <strong>{{ e[2] }}</strong>
-        </div>
+        <tr>
+          <td>{{ e[0] or 'Sin empresa' }}</td>
+          <td>${{ "{:,.0f}".format(e[1]) }}</td>
+          <td>{{ e[2] }}</td>
+        </tr>
         {% endfor %}
-      </div>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Promotores -->
+  <div class="card">
+    <div class="card-header-row">
+      <div class="card-title">Monto por promotor</div>
     </div>
-
-    <!-- PROMOTORES -->
-    <div class="col-md-4">
-      <div class="card shadow-sm p-3">
-        <h5 class="section-title">Monto por Promotor</h5>
-
+    <table class="table-simple">
+      <thead>
+        <tr>
+          <th>Promotor</th>
+          <th>Monto</th>
+          <th>Créditos</th>
+        </tr>
+      </thead>
+      <tbody>
         {% for p in data.promotores %}
-        <div class="data-box">
-          <strong>{{ p[0] or 'Sin promotor' }}</strong><br />
-          Monto: <strong>${{ "{:,.0f}".format(p[1]) }}</strong><br />
-          Créditos: <strong>{{ p[2] }}</strong>
-        </div>
+        <tr>
+          <td>{{ p[0] or 'Sin promotor' }}</td>
+          <td>${{ "{:,.0f}".format(p[1]) }}</td>
+          <td>{{ p[2] }}</td>
+        </tr>
         {% endfor %}
-      </div>
-    </div>
+      </tbody>
+    </table>
   </div>
 </div>
 {% endblock %}
