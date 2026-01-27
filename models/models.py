@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
+
 db = SQLAlchemy()
 
 
@@ -8,11 +9,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=True)
-    
 
-# ------------------------------------------------------------
-# MODELOS PARA CARGA DE CRÉDITOS DESDE CSV
-# ------------------------------------------------------------
 
 class Credit(db.Model):
     __tablename__ = "credits"
@@ -52,6 +49,7 @@ class Credit(db.Model):
     def __repr__(self):
         return f"<Credit #{self.numero_credito} - {self.nombre_cliente}>"
 
+
 class RelatedCredit(db.Model):
     __tablename__ = "related_credits"
 
@@ -60,6 +58,7 @@ class RelatedCredit(db.Model):
     referencia_credito = db.Column(db.Integer)
     monto_liquidar = db.Column(db.Float)
 
+
 class Provider(db.Model):
     __tablename__ = "providers"
 
@@ -67,6 +66,7 @@ class Provider(db.Model):
     credit_id = db.Column(db.Integer, db.ForeignKey("credits.id"))
     nombre_proveedor = db.Column(db.String(200))
     monto = db.Column(db.Float)
+
 
 class Disposition(db.Model):
     __tablename__ = "dispositions"

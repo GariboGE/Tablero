@@ -1,7 +1,6 @@
 from sqlalchemy import func, and_
 from models.models import Credit, db
 from datetime import datetime, timedelta
-import calendar
 
 # Metas 
 TIJUANA = 7879408.92
@@ -9,29 +8,7 @@ MEXICALI = 1890002.75
 ENSENADA = 297733.33
 META_MENSUAL = 10067145.00
 
-def calcular_dias_habiles_restantes(fecha_actual): 
-    """ Calcula los días hábiles del mes. Excluye fines de semana y días festivos. """ 
-    festivos = [ 
-        datetime(2026, 1, 1).date(), 
-        datetime(2026, 2, 2).date(), 
-        datetime(2026, 3, 16).date(), 
-        datetime(2026, 5, 1).date(), 
-        datetime(2026, 9, 16).date(), 
-        datetime(2026, 11, 16).date(), 
-        datetime(2026, 12, 25).date(), ] 
-    
-    ultimo_dia = calendar.monthrange(fecha_actual.year, fecha_actual.month)[1] 
-    fecha_fin_mes = fecha_actual.replace(day=ultimo_dia) 
-    dias_habiles = 0 
-
-    fecha_temp = fecha_actual 
-    while fecha_temp <= fecha_fin_mes: 
-        if fecha_temp.weekday() < 5 and fecha_temp not in festivos: 
-            dias_habiles += 1 
-        fecha_temp += timedelta(days=1) 
-    return dias_habiles
-
-def get_daily_data():
+def get_payments_data():
     hoy = datetime.now().date() - timedelta(days=0)
 
     # Inicio de mes (para la meta mensual)
@@ -63,14 +40,6 @@ def get_daily_data():
     total_monto_mes = creditos_mes.with_entities(func.sum(Credit.monto_disponer)).scalar() or 0
 
     avance_mensual = (total_monto_mes / META_MENSUAL) * 100 if META_MENSUAL else 0
-    
-    # ------------------------------
-    # 2.1) Meta diaria requerida
-    # ------------------------------
-    dias_habiles_restantes_mes = calcular_dias_habiles_restantes(hoy)
-    meta_diaria_requerida = (META_MENSUAL - total_monto_mes) / dias_habiles_restantes_mes if dias_habiles_restantes_mes else 0
-
-
     # ------------------------------
     # 3) Sucursales (del día)
     # ------------------------------
@@ -122,7 +91,6 @@ def get_daily_data():
         "meta_mensual": META_MENSUAL,          # nueva meta
         "monto_acumulado_mes": total_monto_mes,
         "avance_mensual": avance_mensual,
-        "meta_diaria_requerida": meta_diaria_requerida,
 
         "sucursales": sucursales,
         "promotores": promotores,

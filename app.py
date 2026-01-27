@@ -5,6 +5,8 @@ from routes.auth import auth_bp
 from routes.dashboard import dashboard_bp 
 from routes.etl import etl_bp
 from routes.daily import daily_bp
+from routes.payments import payments_bp
+from routes.accounting import accounting_bp
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 import os
@@ -59,10 +61,12 @@ def create_app():
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
     app.register_blueprint(daily_bp, url_prefix='/daily')
     app.register_blueprint(etl_bp, url_prefix='/etl')
+    app.register_blueprint(payments_bp, url_prefix='/payments')
+    app.register_blueprint(accounting_bp, url_prefix='/accounting')
 
     return app
 
 
 if __name__ == "__main__":
     app = create_app()
-    app.run()
+    app.run(host="0.0.0.0", port=5000, debug=True)

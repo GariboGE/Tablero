@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -51,6 +51,26 @@
                 ><i class="fa-solid fa-chart-pie"></i
               ></span>
               <span class="sidebar-link-text">Dashboard</span>
+            </a>
+
+            <a
+              href="{{ url_for('payments.payments') }}"
+              class="sidebar-link {% if request.endpoint == 'payments.payments' %}active{% endif %}"
+            >
+              <span class="sidebar-link-icon"
+                ><i class="fa-solid fa-hand-holding-dollar"></i
+              ></span>
+              <span class="sidebar-link-text">Cobranza</span>
+            </a>
+
+            <a
+              href="{{ url_for('accounting.accounting') }}"
+              class="sidebar-link {% if request.endpoint == 'accounting.accounting' %}active{% endif %}"
+            >
+              <span class="sidebar-link-icon"
+                ><i class="fa-solid fa-receipt"></i
+              ></span>
+              <span class="sidebar-link-text">Contabilidad</span>
             </a>
 
             <a

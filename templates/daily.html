@@ -21,11 +21,29 @@ block content %}
         <div class="card-subtitle">Suma de todos los créditos</div>
       </div>
     </div>
-    <div class="metric-value">
-      ${{ "{:,.0f}".format(data.total_monto) if data.total_monto is defined else
-      "0" }}
+    <div class="metric-value"> 
+      <!--
+      <span
+        style="color: 
+        {% if data.total_monto >= data.meta_diaria_requerida %}
+            #22c55e
+        {% elif data.total_monto >= (data.meta_diaria_requerida * 0.65) %}
+            #f59e0b
+        {% else %}
+            #ef4444
+        {% endif %};
+        font-weight: 600;"
+      >
+      -->
+        ${{ "{:,.0f}".format(data.total_monto) if data.total_monto is defined
+        else "0" }} MXN
+      </span>
     </div>
-    <div class="metric-label text-muted">MXN</div>
+    <!--
+    <div class="metric-label text-muted">
+      Meta de hoy: ${{ "{:,.0f}".format(data.meta_diaria_requerida) }} MXN
+    </div>
+    -->
   </div>
 
   <div class="card-soft">

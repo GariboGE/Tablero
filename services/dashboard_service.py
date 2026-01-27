@@ -11,7 +11,7 @@ def get_dashboard_data(
     sucursal=None,
     tipo_credito=None,
     clasificacion_credito=None,
-    estatus_excluir=("Cancelado", "Cerrado", "Por formalizar"),
+    estatus_excluir=("Cancelado", "Cerrado"),
 ):
     """
     Retorna datos de dashboard con filtros dinámicos por rango de fechas, promotor, empresa, sucursal, etc.
