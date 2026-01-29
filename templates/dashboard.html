@@ -141,11 +141,12 @@
 
   <!-- Gráficas fila 1 -->
   <div class="grid grid-2 mb-4">
+    
     <div class="card">
       <div class="card-header-row">
-        <div class="card-title">Créditos por ciudad</div>
+        <div class="card-title">Monto colocado por promotor</div>
       </div>
-      <canvas id="ciudadesChart"></canvas>
+      <canvas id="promotoresMontoChart"></canvas>
     </div>
 
     <div class="card">
@@ -156,20 +157,37 @@
     </div>
   </div>
 
-  <!-- Gráficas fila 2 -->
+  <!-- Fila 1 NUEVO   -->
   <div class="grid grid-2 mb-4">
     <div class="card">
       <div class="card-header-row">
-        <div class="card-title">Empresas</div>
+        <div class="card-title">Monto colocado por sucursal</div>
       </div>
-      <canvas id="empresasChart"></canvas>
+      <canvas id="sucursalesMontoChart"></canvas>
     </div>
 
     <div class="card">
       <div class="card-header-row">
-        <div class="card-title">Flujo de créditos</div>
+        <div class="card-title">Flujo de colocación</div>
       </div>
       <canvas id="flujoChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Fila 2 -->
+  <div class="grid grid-2 mb-4">
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title">Créditos por sucursal</div>
+      </div>
+      <canvas id="ciudadesChart"></canvas>
+    </div>
+    
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title">Top empresas con mas créditos</div>
+      </div>
+      <canvas id="empresasChart"></canvas>
     </div>
   </div>
 {% endblock %}
@@ -189,6 +207,12 @@
       color1: "#7cc6cc",
       color2: "#00a19c"
     },
+    promotoresMonto: {
+      labels: {{ data.promotores_monto_labels|tojson|safe }},
+      values: {{ data.promotores_monto_values|tojson|safe }},
+      color1: "#7cc6cc",
+      color2: "#00a19c"
+    },
     flujo: {
       labels: {{ data.flujo_labels|tojson|safe }},
       values: {{ data.flujo_values|tojson|safe }},
@@ -198,6 +222,12 @@
       labels: {{ data.empresas_labels|tojson|safe }},
       values: {{ data.empresas_values|tojson|safe }},
       color1: "#7cc6cc"
+    },
+    sucursalesMonto: {
+      labels: {{ data.sucursales_monto_labels|tojson|safe }},
+      values: {{ data.sucursales_monto_values|tojson|safe }},
+      color1: "#7cc6cc",
+      color2: "#00a19c"
     }
   };
 
@@ -264,8 +294,86 @@
     }
   });
 
+  // Promotores Monto - barras horizontales
+  const ctxPromotoresMonto =
+  document.getElementById("promotoresMontoChart").getContext("2d");
+
+  new Chart(ctxPromotoresMonto, {
+    type: 'bar',
+    data: {
+      labels: charts.promotoresMonto.labels,
+      datasets: [{
+        label: "Monto colocado",
+        data: charts.promotoresMonto.values,
+        backgroundColor: createGradient(
+          ctxPromotoresMonto,
+          charts.promotoresMonto.color1,
+          charts.promotoresMonto.color2
+        ),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx =>
+              `$ ${ctx.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: {
+            callback: value =>
+              `$${value.toLocaleString('es-MX')}`
+          }
+        },
+        y: {
+          ticks: { autoSkip: false }
+        }
+      }
+    }
+  });
+
+  // Sucursales Monto - barras horizontales
+  const ctxSucursales = document.getElementById("sucursalesMontoChart").getContext("2d");
+
+  new Chart(ctxSucursales, {
+  type: 'bar',
+  data: {
+    labels: charts.sucursalesMonto.labels,
+    datasets: [{
+      data: charts.sucursalesMonto.values,
+      backgroundColor: createGradient(
+        ctxSucursales,
+        charts.sucursalesMonto.color1,
+        charts.sucursalesMonto.color2
+      ),
+      borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        beginAtZero: true,
+        ticks: {
+          callback: v => `$${v.toLocaleString('es-MX')}`
+        }
+      }
+    }
+  }
+});
+
   // Flujo - línea
   const ctxFlujo = document.getElementById("flujoChart").getContext("2d");
+
   new Chart(ctxFlujo, {
     type: 'line',
     data: {
@@ -279,7 +387,20 @@
         fill: true
       }]
     },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: v => `$${v.toLocaleString('es-MX')}`
+          }
+        }
+      }
+    }
   });
 
   // Empresas - top 8, barras horizontales

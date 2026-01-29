@@ -94,6 +94,31 @@ def get_dashboard_data(
     )
     promotores_labels = [p[0] for p in promotores]
     promotores_values = [p[1] for p in promotores]
+    
+    # Monto acumulado por promotor
+    promotores_monto = (
+        query.with_entities(
+            Credit.promotor,
+            func.sum(Credit.monto_disponer)
+        )
+        .group_by(Credit.promotor)
+        .order_by(func.sum(Credit.monto_disponer).desc())
+        .all()
+    )
+
+    promotores_monto_labels = [p[0] for p in promotores_monto]
+    promotores_monto_values = [float(p[1] or 0) for p in promotores_monto]
+    
+    # Monto por sucursal
+    sucursales_monto = (
+        query.with_entities(Credit.nombre_sucursal, func.sum(Credit.monto_disponer))
+        .group_by(Credit.nombre_sucursal)
+        .order_by(func.sum(Credit.monto_disponer).desc())
+        .all()
+    )
+
+    sucursales_monto_labels = [s[0] for s in sucursales_monto]
+    sucursales_monto_values = [float(s[1] or 0) for s in sucursales_monto]
 
     # Empresas más frecuentes
     empresas = (
@@ -161,6 +186,10 @@ def get_dashboard_data(
         "ciudades_values": ciudades_values,
         "promotores_labels": promotores_labels,
         "promotores_values": promotores_values,
+        "promotores_monto_labels": promotores_monto_labels,
+        "promotores_monto_values": promotores_monto_values,
+        "sucursales_monto_labels": sucursales_monto_labels,
+        "sucursales_monto_values": sucursales_monto_values,
         "empresas_labels": empresas_labels,
         "empresas_values": empresas_values,
         "flujo_labels": flujo_labels,
