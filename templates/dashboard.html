@@ -9,96 +9,105 @@
 
 {% block content %}
   <!-- Filtros -->
-  <div class="card mb-4">
+  <div class="card mb-4" id="filtersCard">
     <div class="card-header-row">
-      <div class="card-title">Filtros</div>
-      <div class="card-subtitle">Ajusta el rango de fechas y segmentos</div>
+      <div>
+        <div class="card-title">Filtros</div>
+        <div class="card-subtitle">Ajusta el rango de fechas y segmentos</div>
+      </div>
+
+      <button type="button" class="btn btn-outline btn-sm" id="toggleFilters">
+        Ocultar
+      </button>
     </div>
 
-    <form method="get" action="{{ url_for('dashboard.dashboard') }}">
-      <div class="form-row form-row-3">
-        <div class="form-field">
-          <label for="fecha_inicio">Fecha inicio</label>
-          <input
-            type="date"
-            id="fecha_inicio"
-            name="fecha_inicio"
-            value="{{ request.args.get('fecha_inicio', data.fecha_default_inicio) }}"
-            class="input-control"
-          />
+
+    <div id="filtersContent">
+      <form method="get" action="{{ url_for('dashboard.dashboard') }}">
+        <div class="form-row form-row-3">
+          <div class="form-field">
+            <label for="fecha_inicio">Fecha inicio</label>
+            <input
+              type="date"
+              id="fecha_inicio"
+              name="fecha_inicio"
+              value="{{ request.args.get('fecha_inicio', data.fecha_default_inicio) }}"
+              class="input-control"
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="fecha_fin">Fecha fin</label>
+            <input
+              type="date"
+              id="fecha_fin"
+              name="fecha_fin"
+              value="{{ request.args.get('fecha_fin', data.fecha_default_fin) }}"
+              class="input-control"
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="promotor">Promotor</label>
+            <select id="promotor" name="promotor" class="select-control">
+              <option value="">Todos</option>
+              {% for p in promotores %}
+                <option value="{{ p }}" {% if request.args.get('promotor') == p %}selected{% endif %}>{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
 
-        <div class="form-field">
-          <label for="fecha_fin">Fecha fin</label>
-          <input
-            type="date"
-            id="fecha_fin"
-            name="fecha_fin"
-            value="{{ request.args.get('fecha_fin', data.fecha_default_fin) }}"
-            class="input-control"
-          />
+        <div class="form-row form-row-3 mt-3">
+          <div class="form-field">
+            <label for="empresa">Empresa</label>
+            <select id="empresa" name="empresa" class="select-control">
+              <option value="">Todas</option>
+              {% for e in empresas %}
+                <option value="{{ e }}" {% if request.args.get('empresa') == e %}selected{% endif %}>{{ e }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="sucursal">Sucursal</label>
+            <select id="sucursal" name="sucursal" class="select-control">
+              <option value="">Todas</option>
+              {% for s in sucursales %}
+                <option value="{{ s }}" {% if request.args.get('sucursal') == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="tipo_credito">Tipo de crédito</label>
+            <select id="tipo_credito" name="tipo_credito" class="select-control">
+              <option value="">Todos</option>
+              {% for t in tipo_credito %}
+                <option value="{{ t }}" {% if request.args.get('tipo_credito') == t %}selected{% endif %}>{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
 
-        <div class="form-field">
-          <label for="promotor">Promotor</label>
-          <select id="promotor" name="promotor" class="select-control">
-            <option value="">Todos</option>
-            {% for p in promotores %}
-              <option value="{{ p }}" {% if request.args.get('promotor') == p %}selected{% endif %}>{{ p }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
-
-      <div class="form-row form-row-3 mt-3">
-        <div class="form-field">
-          <label for="empresa">Empresa</label>
-          <select id="empresa" name="empresa" class="select-control">
-            <option value="">Todas</option>
-            {% for e in empresas %}
-              <option value="{{ e }}" {% if request.args.get('empresa') == e %}selected{% endif %}>{{ e }}</option>
-            {% endfor %}
-          </select>
+        <div class="form-row form-row-3 mt-3">
+          <div class="form-field">
+            <label for="clasificacion_credito">Clasificación del crédito</label>
+            <select id="clasificacion_credito" name="clasificacion_credito" class="select-control">
+              <option value="">Todas</option>
+              {% for c in clasificacion_credito %}
+                <option value="{{ c }}" {% if request.args.get('clasificacion_credito') == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
 
-        <div class="form-field">
-          <label for="sucursal">Sucursal</label>
-          <select id="sucursal" name="sucursal" class="select-control">
-            <option value="">Todas</option>
-            {% for s in sucursales %}
-              <option value="{{ s }}" {% if request.args.get('sucursal') == s %}selected{% endif %}>{{ s }}</option>
-            {% endfor %}
-          </select>
+        <div class="mt-3 text-right">
+          <button type="submit" class="btn btn-primary">Aplicar filtros</button>
+          <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline" style="margin-left:8px;">Limpiar</a>
         </div>
-
-        <div class="form-field">
-          <label for="tipo_credito">Tipo de crédito</label>
-          <select id="tipo_credito" name="tipo_credito" class="select-control">
-            <option value="">Todos</option>
-            {% for t in tipo_credito %}
-              <option value="{{ t }}" {% if request.args.get('tipo_credito') == t %}selected{% endif %}>{{ t }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
-
-      <div class="form-row form-row-3 mt-3">
-        <div class="form-field">
-          <label for="clasificacion_credito">Clasificación del crédito</label>
-          <select id="clasificacion_credito" name="clasificacion_credito" class="select-control">
-            <option value="">Todas</option>
-            {% for c in clasificacion_credito %}
-              <option value="{{ c }}" {% if request.args.get('clasificacion_credito') == c %}selected{% endif %}>{{ c }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
-
-      <div class="mt-3 text-right">
-        <button type="submit" class="btn btn-primary">Aplicar filtros</button>
-        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline" style="margin-left:8px;">Limpiar</a>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 
   <!-- Tarjetas Totales -->
@@ -141,29 +150,11 @@
 
   <!-- Gráficas fila 1 -->
   <div class="grid grid-2 mb-4">
-    
     <div class="card">
       <div class="card-header-row">
         <div class="card-title">Monto colocado por promotor</div>
       </div>
       <canvas id="promotoresMontoChart"></canvas>
-    </div>
-
-    <div class="card">
-      <div class="card-header-row">
-        <div class="card-title">Créditos por promotor</div>
-      </div>
-      <canvas id="promotoresChart"></canvas>
-    </div>
-  </div>
-
-  <!-- Fila 1 NUEVO   -->
-  <div class="grid grid-2 mb-4">
-    <div class="card">
-      <div class="card-header-row">
-        <div class="card-title">Monto colocado por sucursal</div>
-      </div>
-      <canvas id="sucursalesMontoChart"></canvas>
     </div>
 
     <div class="card">
@@ -174,15 +165,15 @@
     </div>
   </div>
 
-  <!-- Fila 2 -->
+  <!-- Gráficas fila 2 -->
   <div class="grid grid-2 mb-4">
     <div class="card">
       <div class="card-header-row">
-        <div class="card-title">Créditos por sucursal</div>
+        <div class="card-title">Monto colocado por sucursal</div>
       </div>
-      <canvas id="ciudadesChart"></canvas>
+      <canvas id="sucursalesMontoChart"></canvas>
     </div>
-    
+
     <div class="card">
       <div class="card-header-row">
         <div class="card-title">Top empresas con mas créditos</div>
@@ -194,19 +185,19 @@
 
 {% block extra_scripts %}
 <script>
+  const toggleBtn2 = document.getElementById("toggleFilters");
+  const filtersContent = document.getElementById("filtersContent");
+
+  toggleBtn2.addEventListener("click", () => {
+    filtersContent.classList.toggle("filters-hidden");
+
+    toggleBtn2.textContent =
+      filtersContent.classList.contains("filters-hidden")
+        ? "Mostrar"
+        : "Ocultar";
+  });
+
   const charts = {
-    ciudades: {
-      labels: {{ data.ciudades_labels|tojson|safe }},
-      values: {{ data.ciudades_values|tojson|safe }},
-      color1: "#7cc6cc",
-      color2: "#00a19c"
-    },
-    promotores: {
-      labels: {{ data.promotores_labels|tojson|safe }},
-      values: {{ data.promotores_values|tojson|safe }},
-      color1: "#7cc6cc",
-      color2: "#00a19c"
-    },
     promotoresMonto: {
       labels: {{ data.promotores_monto_labels|tojson|safe }},
       values: {{ data.promotores_monto_values|tojson|safe }},
@@ -221,7 +212,8 @@
     empresas: {
       labels: {{ data.empresas_labels|tojson|safe }},
       values: {{ data.empresas_values|tojson|safe }},
-      color1: "#7cc6cc"
+      color1: "#7cc6cc",
+      color2: "#00a19c"
     },
     sucursalesMonto: {
       labels: {{ data.sucursales_monto_labels|tojson|safe }},
@@ -256,41 +248,6 @@
       responsive: true,
       plugins: { legend: { display: false } },
       scales: { [yAxis]: { beginAtZero: true } }
-    }
-  });
-
-  // Ciudades
-  const ctxCiudades = document.getElementById("ciudadesChart").getContext("2d");
-  new Chart(ctxCiudades,
-    chartConfig(ctxCiudades, 'bar', charts.ciudades, "Créditos por ciudad",
-                charts.ciudades.color1, charts.ciudades.color2)
-  );
-
-  // Promotores - barras horizontales
-  const ctxPromotores = document.getElementById("promotoresChart").getContext("2d");
-  new Chart(ctxPromotores, {
-    type: 'bar',
-    data: {
-      labels: charts.promotores.labels,
-      datasets: [{
-        label: "Créditos por promotor",
-        data: charts.promotores.values,
-        backgroundColor: createGradient(ctxPromotores,
-                                        charts.promotores.color1,
-                                        charts.promotores.color2),
-        borderColor: "#4b5563",
-        borderWidth: 1,
-        borderRadius: 6
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { beginAtZero: true },
-        y: { ticks: { autoSkip: false } }
-      }
     }
   });
 
@@ -362,14 +319,13 @@
     plugins: { legend: { display: false } },
     scales: {
       x: {
-        beginAtZero: true,
         ticks: {
           callback: v => `$${v.toLocaleString('es-MX')}`
+          }
         }
       }
     }
-  }
-});
+  });
 
   // Flujo - línea
   const ctxFlujo = document.getElementById("flujoChart").getContext("2d");
@@ -416,7 +372,11 @@
       datasets: [{
         label: "Créditos por empresa",
         data: empresasTop.values,
-        backgroundColor: charts.empresas.color1,
+        backgroundColor: createGradient(
+          ctxEmpresas,
+          charts.empresas.color1,
+          charts.empresas.color2
+        ),
         borderColor: "#4b5563",
         borderWidth: 1,
         borderRadius: 6

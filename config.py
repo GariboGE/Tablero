@@ -13,3 +13,11 @@ class Config:
     
     # Data ETL settings
     DATA_ETL_PATH = os.getenv('DATA_ETL_PATH', 'etl')
+    
+    MAIL_SERVER='az1-ls15.a2hosting.com'
+    MAIL_PORT=465
+    MAIL_USE_SSL = True
+    MAIL_USE_TLS = False
+    MAIL_USERNAME='egaribo@credinspira.mx'
+    MAIL_PASSWORD='Octubre2025*'
+    MAIL_DEFAULT_SENDER='egaribo@credinspira.mx'

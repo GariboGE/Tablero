@@ -48,7 +48,7 @@ def get_dashboard_data(
         query = query.filter(Credit.fecha_desembolso <= fecha_fin)
 
     if promotor:
-        query = query.filter(Credit.promotor == promotor)
+        query = query.filter(Credit.promotor == promotor).order_by(Credit.promotor)
     if empresa:
         query = query.filter(Credit.empresa == empresa)
     if sucursal:

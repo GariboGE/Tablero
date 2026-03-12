@@ -4,10 +4,11 @@ from datetime import datetime, timedelta
 import calendar
 
 # Metas 
-TIJUANA = 7879408.92
-MEXICALI = 1890002.75
-ENSENADA = 297733.33
-META_MENSUAL = 10067145.00
+TIJUANA = 9235545.74
+MEXICALI = 1879180.5
+ENSENADA = 645935.41
+META_MENSUAL = TIJUANA + MEXICALI + ENSENADA
+
 
 def calcular_dias_habiles_restantes(fecha_actual): 
     """ Calcula los días hábiles del mes. Excluye fines de semana y días festivos. """ 
@@ -56,7 +57,8 @@ def get_daily_data():
     # ------------------------------
     filtro_mes = and_(
         Credit.fecha_desembolso.between(inicio_mes, hoy),
-        ~Credit.estatus_credito.in_(["Cancelado", "Cerrado"])
+        ~Credit.estatus_credito.in_(["Cancelado", "Cerrado"]),
+        Credit.tipo_credito.in_(["NOMINA"])
     )
 
     creditos_mes = db.session.query(Credit).filter(filtro_mes)

@@ -87,7 +87,7 @@ block content %}
     </div>
     <table class="table-simple">
       <thead>
-        <tr>
+          <tr>
           <th>Sucursal</th>
           <th>Monto</th>
           <th>Créditos</th>
@@ -155,4 +155,33 @@ block content %}
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function checkUpdates() {
+    try {
+        const response = await fetch("/dashboard/last-update");
+        const data = await response.json();
+
+        let lastKnownId = localStorage.getItem("last_credit_id");
+
+        if (!lastKnownId) {
+            localStorage.setItem("last_credit_id", data.last_id);
+            return;
+        }
+
+        if (parseInt(data.last_id) !== parseInt(lastKnownId)) {
+            localStorage.setItem("last_credit_id", data.last_id);
+            window.location.reload();
+        }
+
+    } catch (e) {
+        console.error("Error checking updates", e);
+    }
+}
+
+setInterval(checkUpdates, 120000);
+</script>
+
 {% endblock %}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      font-family:
+        -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+        Helvetica, Arial, sans-serif;
+      color: #202124;
+      -webkit-font-smoothing: antialiased;
+    "
+  >
+    <table>
+      <tr>
+        <td style="padding: 20px">
+          <!-- CUERPO DEL MENSAJE -->
+          <p style="font-size: 16px; margin-bottom: 24px">Hola,</p>
+
+          <p style="font-size: 15px; line-height: 1.5; margin-bottom: 16px">
+            Se adjuntan las capturas correspondientes a los
+            <strong style="color: #1a73e8">{{ titulo }}</strong>
+            del día <strong>{{ fecha }}</strong>, y acumulado mensual.
+          </p>
+
+          <p style="font-size: 15px; margin-bottom: 32px">Saludos</p>
+
+          <!-- FIRMA PROFESIONAL -->
+          <table
+            border="0"
+            cellpadding="0"
+            cellspacing="0"
+            width="100%"
+            style="border-top: 1px solid #e0e0e0; padding-top: 16px"
+          >
+            <tr>
+              <td style="vertical-align: top">
+                <p
+                  style="
+                    margin: 0 0 12px 0;
+                    font-size: 14px;
+                    color: #70757a;
+                    font-weight: bold;
+                  "
+                >
+                  Atentamente,
+                </p>
+                <img
+                  src="cid:firma"
+                  alt="Firma"
+                  width="500"
+                  style="
+                    display: block;
+                    width: 100%;
+                    max-width: 320px;
+                    height: auto;
+                    border: 0;
+                    filter: contrast(1.05);
+                  "
+                />
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

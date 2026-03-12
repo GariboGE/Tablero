@@ -53,6 +53,9 @@
               <span class="sidebar-link-text">Dashboard</span>
             </a>
 
+            <!--
+
+
             <a
               href="{{ url_for('payments.payments') }}"
               class="sidebar-link {% if request.endpoint == 'payments.payments' %}active{% endif %}"
@@ -71,6 +74,17 @@
                 ><i class="fa-solid fa-receipt"></i
               ></span>
               <span class="sidebar-link-text">Contabilidad</span>
+            </a>
+            -->
+
+            <a
+              href="{{ url_for('email.email') }}"
+              class="sidebar-link {% if request.endpoint == 'email.email' %}active{% endif %}"
+            >
+              <span class="sidebar-link-icon"
+                ><i class="fa-solid fa-envelope"></i
+              ></span>
+              <span class="sidebar-link-text">Enviar por correo</span>
             </a>
 
             <a
@@ -131,6 +145,7 @@
             </div>
           </div>
 
+          <!--
           {% if current_user.is_authenticated %}
           <div class="topbar-right">
             <div class="user-pill">
@@ -144,6 +159,25 @@
                 </div>
                 <div class="text-muted" style="font-size: 0.75rem">Admin</div>
               </div>
+            </div>
+          </div>
+          {% endif %}
+          -->
+          {% if current_user.is_authenticated %}
+          <div class="topbar-right">
+            <button id="runBotBtn" class="manual-trigger-btn">
+              <i class="fa-solid fa-play"></i>
+              <span id="btnText">Ejecutar Bot</span>
+              <i
+                class="fa-solid fa-spinner fa-spin"
+                id="spinner"
+                style="display: none"
+              ></i>
+            </button>
+
+            <div class="bot-info">
+              Última ejecución:
+              <span id="lastRun">--</span>
             </div>
           </div>
           {% endif %}
@@ -162,6 +196,51 @@
     </div>
 
     <script>
+      // AJAX para manejar el estado del bot y su ejecución
+      const runBotBtn = document.getElementById("runBotBtn");
+      const spinner = document.getElementById("spinner");
+      const btnText = document.getElementById("btnText");
+      const lastRunSpan = document.getElementById("lastRun");
+
+      async function fetchStatus() {
+        const res = await fetch("/etl/bot-status");
+        const data = await res.json();
+
+        if (data.running) {
+          runBotBtn.disabled = true;
+          spinner.style.display = "inline-block";
+          btnText.textContent = "Ejecutando...";
+        } else {
+          runBotBtn.disabled = false;
+          spinner.style.display = "none";
+          btnText.textContent = "Ejecutar Bot";
+        }
+
+        if (data.last_run) {
+          lastRunSpan.textContent = data.last_run;
+        }
+      }
+
+      runBotBtn?.addEventListener("click", async () => {
+        runBotBtn.disabled = true;
+        spinner.style.display = "inline-block";
+        btnText.textContent = "Ejecutando...";
+
+        const res = await fetch("/etl/run-bot", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        fetchStatus();
+      });
+
+      // refrescar estado cada 10 segundos
+      setInterval(fetchStatus, 10000);
+      fetchStatus();
+
+      // SIDEBAR TOGGLE
       const sidebar = document.getElementById("sidebar");
       const toggleBtn = document.getElementById("sidebarToggle");
 
@@ -184,6 +263,26 @@
           }
         } catch (e) {}
       })();
+
+      function refreshAtWorkStart() {
+        const now = new Date();
+
+        const target = new Date();
+        target.setHours(8, 20, 0, 0);
+        // Si ya pasaron las 9 hoy, programar para mañana
+        if (now >= target) {
+          target.setDate(target.getDate() + 1);
+        }
+
+        const msUntilRefresh = target - now;
+
+        setTimeout(() => {
+          console.log("Inicio de horario laboral, refrescando página...");
+          window.location.reload();
+        }, msUntilRefresh);
+      }
+
+      refreshAtWorkStart();
     </script>
 
     {% block extra_scripts %}{% endblock %}

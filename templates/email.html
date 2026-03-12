@@ -1,0 +1,17 @@
+{% extends "base.html" %} {% block top_title %}Enviar capturas por email{%
+endblock %} {% block top_subtitle %}Diparador para enviar capturas del dashboard
+por correo{% endblock %} {% block content %}
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">Destinatarios</label>
+    <input
+      type="text"
+      name="recipients"
+      class="form-control"
+      placeholder="correo1@dominio.com"
+      required
+    />
+  </div>
+  <button type="submit" class="btn btn-primary">Enviar email</button>
+</form>
+{% endblock %}
