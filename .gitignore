@@ -39,4 +39,5 @@ Thumbs.db
 .coverage
 htmlcov/
 
-# Temp features
+# Email signature
+static/email/*
