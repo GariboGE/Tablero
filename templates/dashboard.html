@@ -185,11 +185,18 @@
     </div>
   </div>
 
-  <!-- Top empresas (fila completa) -->
-  <div class="mb-4">
+  <!-- Gráficas fila 2 -->
+  <div class="grid grid-2 mb-4">
     <div class="card">
       <div class="card-header-row">
-        <div class="card-title">Top empresas — monto colocado y créditos</div>
+        <div class="card-title">Créditos por promotor</div>
+      </div>
+      <canvas id="promotoresChart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title">Top empresas — créditos y monto</div>
       </div>
       <canvas id="empresasChart"></canvas>
     </div>
@@ -226,6 +233,12 @@
       labels: {{ data.empresas_labels|tojson|safe }},
       values: {{ data.empresas_values|tojson|safe }},
       montos: {{ data.empresas_montos|tojson|safe }},
+      color1: "#7cc6cc",
+      color2: "#00a19c"
+    },
+    promotores: {
+      labels: {{ data.promotores_labels|tojson|safe }},
+      values: {{ data.promotores_values|tojson|safe }},
       color1: "#7cc6cc",
       color2: "#00a19c"
     }
@@ -338,39 +351,24 @@
     }
   });
 
-  // Empresas - top 8, monto como barra + núm. créditos como texto
+  // Empresas - top 8, créditos en eje X, monto en etiqueta
   const ctxEmpresas = document.getElementById("empresasChart").getContext("2d");
   const empresasTop = {
-    labels: charts.empresas.labels.slice(0, 8),
+    labels: charts.empresas.labels.slice(0, 8).map((lbl, i) => [
+      lbl,
+      `$${charts.empresas.montos[i].toLocaleString('es-MX', { maximumFractionDigits: 0 })}`
+    ]),
     values: charts.empresas.values.slice(0, 8),
     montos: charts.empresas.montos.slice(0, 8)
   };
 
-  const creditCountPlugin = {
-    id: 'creditCounts',
-    afterDatasetsDraw(chart) {
-      const { ctx } = chart;
-      const meta = chart.getDatasetMeta(0);
-      meta.data.forEach((bar, i) => {
-        ctx.save();
-        ctx.fillStyle = '#6b7280';
-        ctx.font = '600 11px system-ui, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`${empresasTop.values[i]} créditos`, bar.x + 6, bar.y);
-        ctx.restore();
-      });
-    }
-  };
-
   new Chart(ctxEmpresas, {
     type: 'bar',
-    plugins: [creditCountPlugin],
     data: {
       labels: empresasTop.labels,
       datasets: [{
-        label: "Monto colocado",
-        data: empresasTop.montos,
+        label: "Créditos",
+        data: empresasTop.values,
         backgroundColor: createGradient(ctxEmpresas, "#7cc6cc", "#00a19c"),
         borderRadius: 6
       }]
@@ -378,21 +376,52 @@
     options: {
       indexAxis: 'y',
       responsive: true,
-      layout: { padding: { right: 80 } },
       plugins: {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx =>
-              `$${ctx.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+            label: (ctx) => {
+              const i = ctx.dataIndex;
+              return [
+                `Créditos: ${ctx.raw}`,
+                `Monto: $${empresasTop.montos[i].toLocaleString('es-MX', { maximumFractionDigits: 0 })}`
+              ];
+            }
           }
         }
       },
       scales: {
-        x: {
-          beginAtZero: true,
-          ticks: { callback: v => `$${v.toLocaleString('es-MX')}` }
-        },
+        x: { beginAtZero: true, ticks: { precision: 0 } },
+        y: { ticks: { autoSkip: false } }
+      }
+    }
+  });
+
+  // Créditos por promotor - barras horizontales
+  const ctxPromotores = document.getElementById("promotoresChart").getContext("2d");
+
+  new Chart(ctxPromotores, {
+    type: 'bar',
+    data: {
+      labels: charts.promotores.labels,
+      datasets: [{
+        label: "Créditos",
+        data: charts.promotores.values,
+        backgroundColor: createGradient(ctxPromotores, "#7cc6cc", "#00a19c"),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => `Créditos: ${ctx.raw}` }
+        }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { precision: 0 } },
         y: { ticks: { autoSkip: false } }
       }
     }
