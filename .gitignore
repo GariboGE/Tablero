@@ -6,6 +6,7 @@ __pycache__/
 
 # Virtual environment and variables
 .venv/
+venv/
 .env
 
 # Flask
