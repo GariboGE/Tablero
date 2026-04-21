@@ -122,13 +122,18 @@ def get_dashboard_data(
 
     # Empresas más frecuentes
     empresas = (
-        query.with_entities(Credit.empresa, func.count(Credit.id))
+        query.with_entities(
+            Credit.empresa,
+            func.count(Credit.id),
+            func.sum(Credit.monto_disponer)
+        )
         .group_by(Credit.empresa)
         .order_by(func.count(Credit.id).desc())
         .all()
     )
     empresas_labels = [e[0] for e in empresas]
     empresas_values = [e[1] for e in empresas]
+    empresas_montos = [float(e[2] or 0) for e in empresas]
 
     # Flujo de desembolsos (solo montos a disponer por día, sin intereses)
     flujo = (
@@ -192,6 +197,7 @@ def get_dashboard_data(
         "sucursales_monto_values": sucursales_monto_values,
         "empresas_labels": empresas_labels,
         "empresas_values": empresas_values,
+        "empresas_montos": empresas_montos,
         "flujo_labels": flujo_labels,
         "flujo_values": flujo_values_final,
         "monto_promedio": round(monto_promedio, 2) if monto_promedio else 0,
