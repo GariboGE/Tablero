@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 import calendar
 
 # Metas 
-TIJUANA = 9235545.74
-MEXICALI = 1879180.5
-ENSENADA = 645935.41
+TIJUANA = 10110386.30
+MEXICALI = 1866718.99
+ENSENADA = 777694.89
 META_MENSUAL = TIJUANA + MEXICALI + ENSENADA
 
 
@@ -43,7 +43,8 @@ def get_daily_data():
     # ------------------------------
     filtro_base = and_(
         Credit.fecha_desembolso == hoy,
-        ~Credit.estatus_credito.in_(["Cancelado", "Cerrado"])
+        ~Credit.estatus_credito.in_(["Cancelado", "Cerrado"]),
+        Credit.tipo_credito.in_(["NOMINA"])
     )
 
     creditos = db.session.query(Credit).filter(filtro_base)
