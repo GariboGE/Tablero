@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 from dotenv import load_dotenv
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from services.auto_etl_service import process_new_csvs
 from threading import Lock
 import time
@@ -63,10 +64,7 @@ def descargar_archivo():
             # Selccion de fechas varias
             today = datetime.today()
             
-            mes_anterior = today.replace(
-                month=today.month - 1 if today.month > 1 else 12,
-                year=today.year - 1 if today.month == 1 else today.year
-            )   
+            mes_anterior = today - relativedelta(month=1)
             
             header_frame3.locator("input[name='vDateMinD']").fill(mes_anterior.strftime("%d"))
             header_frame3.locator("input[name='vDateMinM']").fill(mes_anterior.strftime("%m"))
