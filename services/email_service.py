@@ -51,7 +51,7 @@ def send_email(subject, recipients, body, html=None):
         f"&clasificacion_credito="
     )
     
-    capture_page(dashboard_url, "dashboard_nomina.png", 1920, 1370)
+    capture_page(dashboard_url, "dashboard_nomina.png", 1920, 1500)
     capture_page("http://localhost:5000/daily/daily", "daily.png", 1920, 1080)
         
     for img in ['static/screenshots/daily.png', 'static/screenshots/dashboard_nomina.png']:
