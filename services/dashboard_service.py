@@ -48,11 +48,20 @@ def get_dashboard_data(
         query = query.filter(Credit.fecha_desembolso <= fecha_fin)
 
     if promotor:
-        query = query.filter(Credit.promotor == promotor).order_by(Credit.promotor)
+        if isinstance(promotor, (list, tuple, set)):
+            query = query.filter(Credit.promotor.in_(promotor))
+        else:
+            query = query.filter(Credit.promotor == promotor)
     if empresa:
-        query = query.filter(Credit.empresa == empresa)
+        if isinstance(empresa, (list, tuple, set)):
+            query = query.filter(Credit.empresa.in_(empresa))
+        else:
+            query = query.filter(Credit.empresa == empresa)
     if sucursal:
-        query = query.filter(Credit.nombre_sucursal == sucursal)
+        if isinstance(sucursal, (list, tuple, set)):
+            query = query.filter(Credit.nombre_sucursal.in_(sucursal))
+        else:
+            query = query.filter(Credit.nombre_sucursal == sucursal)
         
     # Filtro por tipo de crédito
     if tipo_credito:

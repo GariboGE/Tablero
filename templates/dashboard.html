@@ -5,6 +5,61 @@
 
 {% block extra_head %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .ms-wrap { position: relative; }
+    .ms-trigger {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .ms-trigger:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary-soft); }
+    .ms-arrow { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.15s; }
+    .ms-wrap.open .ms-arrow { transform: rotate(180deg); }
+    .ms-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: white;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 200;
+      padding: 4px 0;
+    }
+    .ms-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      color: var(--text-main);
+    }
+    .ms-item:hover { background: var(--bg-body); }
+    .ms-item input[type=checkbox] { accent-color: var(--primary); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+    .ms-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .ms-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #d1f0ef;
+      color: #007571;
+      padding: 2px 6px 2px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .ms-tag-remove {
+      background: none; border: none; cursor: pointer;
+      color: #007571; font-size: 0.8rem; line-height: 1;
+      padding: 0; display: flex; align-items: center;
+    }
+    .ms-tag-remove:hover { color: var(--danger); }
+  </style>
 {% endblock %}
 
 {% block content %}
@@ -48,57 +103,107 @@
           </div>
 
           <div class="form-field">
-            <label for="promotor">Promotor</label>
-            <select id="promotor" name="promotor" class="select-control">
-              <option value="">Todos</option>
-              {% for p in promotores %}
-                <option value="{{ p }}" {% if request.args.get('promotor') == p %}selected{% endif %}>{{ p }}</option>
-              {% endfor %}
-            </select>
+            <label>Promotor</label>
+            <div class="ms-wrap">
+              <div class="ms-trigger select-control" tabindex="0">
+                <span class="ms-trigger-text">Todos</span>
+                <span class="ms-arrow">▾</span>
+              </div>
+              <div class="ms-dropdown" hidden>
+                {% for p in promotores %}
+                <label class="ms-item">
+                  <input type="checkbox" name="promotor" value="{{ p }}"
+                    {% if p in request.args.getlist('promotor') %}checked{% endif %}>
+                  <span>{{ p }}</span>
+                </label>
+                {% endfor %}
+              </div>
+              <div class="ms-tags"></div>
+            </div>
           </div>
         </div>
 
         <div class="form-row form-row-3 mt-3">
           <div class="form-field">
-            <label for="empresa">Empresa</label>
-            <select id="empresa" name="empresa" class="select-control">
-              <option value="">Todas</option>
-              {% for e in empresas %}
-                <option value="{{ e }}" {% if request.args.get('empresa') == e %}selected{% endif %}>{{ e }}</option>
-              {% endfor %}
-            </select>
+            <label>Empresa</label>
+            <div class="ms-wrap">
+              <div class="ms-trigger select-control" tabindex="0">
+                <span class="ms-trigger-text">Todas</span>
+                <span class="ms-arrow">▾</span>
+              </div>
+              <div class="ms-dropdown" hidden>
+                {% for e in empresas %}
+                <label class="ms-item">
+                  <input type="checkbox" name="empresa" value="{{ e }}"
+                    {% if e in request.args.getlist('empresa') %}checked{% endif %}>
+                  <span>{{ e }}</span>
+                </label>
+                {% endfor %}
+              </div>
+              <div class="ms-tags"></div>
+            </div>
           </div>
 
           <div class="form-field">
-            <label for="sucursal">Sucursal</label>
-            <select id="sucursal" name="sucursal" class="select-control">
-              <option value="">Todas</option>
-              {% for s in sucursales %}
-                <option value="{{ s }}" {% if request.args.get('sucursal') == s %}selected{% endif %}>{{ s }}</option>
-              {% endfor %}
-            </select>
+            <label>Sucursal</label>
+            <div class="ms-wrap">
+              <div class="ms-trigger select-control" tabindex="0">
+                <span class="ms-trigger-text">Todas</span>
+                <span class="ms-arrow">▾</span>
+              </div>
+              <div class="ms-dropdown" hidden>
+                {% for s in sucursales %}
+                <label class="ms-item">
+                  <input type="checkbox" name="sucursal" value="{{ s }}"
+                    {% if s in request.args.getlist('sucursal') %}checked{% endif %}>
+                  <span>{{ s }}</span>
+                </label>
+                {% endfor %}
+              </div>
+              <div class="ms-tags"></div>
+            </div>
           </div>
 
           <div class="form-field">
-            <label for="tipo_credito">Tipo de crédito</label>
-            <select id="tipo_credito" name="tipo_credito" class="select-control">
-              <option value="">Todos</option>
-              {% for t in tipo_credito %}
-                <option value="{{ t }}" {% if request.args.get('tipo_credito') == t %}selected{% endif %}>{{ t }}</option>
-              {% endfor %}
-            </select>
+            <label>Tipo de crédito</label>
+            <div class="ms-wrap">
+              <div class="ms-trigger select-control" tabindex="0">
+                <span class="ms-trigger-text">Todos</span>
+                <span class="ms-arrow">▾</span>
+              </div>
+              <div class="ms-dropdown" hidden>
+                {% for t in tipo_credito %}
+                <label class="ms-item">
+                  <input type="checkbox" name="tipo_credito" value="{{ t }}"
+                    {% if t in request.args.getlist('tipo_credito') %}checked{% endif %}>
+                  <span>{{ t }}</span>
+                </label>
+                {% endfor %}
+              </div>
+              <div class="ms-tags"></div>
+            </div>
           </div>
         </div>
 
         <div class="form-row form-row-3 mt-3">
           <div class="form-field">
-            <label for="clasificacion_credito">Clasificación del crédito</label>
-            <select id="clasificacion_credito" name="clasificacion_credito" class="select-control">
-              <option value="">Todas</option>
-              {% for c in clasificacion_credito %}
-                <option value="{{ c }}" {% if request.args.get('clasificacion_credito') == c %}selected{% endif %}>{{ c }}</option>
-              {% endfor %}
-            </select>
+            <label>Clasificación del crédito</label>
+            <div class="ms-wrap">
+              <div class="ms-trigger select-control" tabindex="0">
+                <span class="ms-trigger-text">Todas</span>
+                <span class="ms-arrow">▾</span>
+              </div>
+              <div class="ms-dropdown" hidden>
+                {% for c in clasificacion_credito %}
+                <label class="ms-item">
+                  <input type="checkbox" name="clasificacion_credito" value="{{ c }}"
+                    {% if c in request.args.getlist('clasificacion_credito') %}checked{% endif %}>
+                  <span>{{ c }}</span>
+                </label>
+                {% endfor %}
+              </div>
+              <div class="ms-tags"></div>
+            </div>
           </div>
         </div>
 
@@ -396,6 +501,67 @@
       }
     }
   });
+
+  // Multi-select widgets
+  function initMultiSelect(wrap) {
+    const trigger = wrap.querySelector('.ms-trigger');
+    const dropdown = wrap.querySelector('.ms-dropdown');
+    const tagsEl = wrap.querySelector('.ms-tags');
+    const triggerText = wrap.querySelector('.ms-trigger-text');
+    const defaultLabel = triggerText.textContent;
+    const checkboxes = [...wrap.querySelectorAll('input[type=checkbox]')];
+
+    function renderTags() {
+      tagsEl.innerHTML = '';
+      const checked = checkboxes.filter(cb => cb.checked);
+      triggerText.textContent = checked.length === 0
+        ? defaultLabel
+        : `${checked.length} seleccionado${checked.length > 1 ? 's' : ''}`;
+      checked.forEach(cb => {
+        const tag = document.createElement('span');
+        tag.className = 'ms-tag';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ms-tag-remove';
+        btn.textContent = '✕';
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          cb.checked = false;
+          renderTags();
+        });
+        tag.appendChild(document.createTextNode(cb.value + ' '));
+        tag.appendChild(btn);
+        tagsEl.appendChild(tag);
+      });
+    }
+
+    trigger.addEventListener('click', e => {
+      e.stopPropagation();
+      const isOpen = !dropdown.hidden;
+      document.querySelectorAll('.ms-wrap.open').forEach(w => {
+        w.querySelector('.ms-dropdown').hidden = true;
+        w.classList.remove('open');
+      });
+      if (!isOpen) { dropdown.hidden = false; wrap.classList.add('open'); }
+    });
+
+    trigger.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger.click(); }
+    });
+
+    checkboxes.forEach(cb => cb.addEventListener('change', renderTags));
+
+    document.addEventListener('click', e => {
+      if (!wrap.contains(e.target)) {
+        dropdown.hidden = true;
+        wrap.classList.remove('open');
+      }
+    });
+
+    renderTags();
+  }
+
+  document.querySelectorAll('.ms-wrap').forEach(initMultiSelect);
 
   // Créditos por promotor - barras horizontales
   const ctxPromotores = document.getElementById("promotoresChart").getContext("2d");

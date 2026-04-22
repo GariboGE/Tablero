@@ -26,11 +26,11 @@ def dashboard():
     filtros = {
     'fecha_inicio': fecha_inicio,
     'fecha_fin': fecha_fin,
-    'promotor': request.args.get('promotor'),
-    'empresa': request.args.get('empresa'),
-    'sucursal': request.args.get('sucursal'),
-    'tipo_credito': request.args.get('tipo_credito'),
-    'clasificacion_credito': request.args.get('clasificacion_credito')
+    'promotor': request.args.getlist('promotor') or None,
+    'empresa': request.args.getlist('empresa') or None,
+    'sucursal': request.args.getlist('sucursal') or None,
+    'tipo_credito': request.args.getlist('tipo_credito') or None,
+    'clasificacion_credito': request.args.getlist('clasificacion_credito') or None,
     }
     
     # Llenar selects dinámicamente (sin duplicados)
