@@ -1,19 +1,65 @@
-{% extends "base.html" %} {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-4">
-    <h2>Login</h2>
-    <form method="POST">
-      {{ form.hidden_tag() }}
-      <div class="form-group mb-3">
-        {{ form.username.label(class="form-label") }} {{
-        form.username(class="form-control") }}
-      </div>
-      <div class="form-group mb-3">
-        {{ form.password.label(class="form-label") }} {{
-        form.password(class="form-control") }}
-      </div>
-      <button type="submit" class="btn btn-primary">Login</button>
-    </form>
+{% extends "base.html" %}
+
+{% block body_class %}login-page{% endblock %}
+
+{% block content %}
+<div class="login-card">
+
+  <div class="login-logo">
+    <div class="login-logo-icon">
+      <i class="fa-solid fa-chart-line"></i>
+    </div>
+    <div class="login-logo-name">Credinspira</div>
+    <div class="login-logo-subtitle">Sistema de gestión de créditos</div>
   </div>
+
+  <div class="login-title">Iniciar sesión</div>
+
+  <form method="POST" class="login-form" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="form-field">
+      {{ form.username.label(class="") }}
+      {{ form.username(class="input-control", placeholder="Tu nombre de usuario", autocomplete="username") }}
+    </div>
+
+    <div class="form-field">
+      {{ form.password.label(class="") }}
+      <div class="password-wrapper">
+        {{ form.password(class="input-control", id="passwordField", placeholder="Tu contraseña", autocomplete="current-password") }}
+        <button
+          type="button"
+          class="password-toggle"
+          id="passwordToggle"
+          aria-label="Mostrar u ocultar contraseña"
+          title="Mostrar/ocultar contraseña"
+        >
+          <i class="fa-regular fa-eye" id="passwordToggleIcon"></i>
+        </button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" style="margin-top:4px;">
+      <i class="fa-solid fa-right-to-bracket"></i>
+      Entrar
+    </button>
+  </form>
+
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const passwordField  = document.getElementById("passwordField");
+  const passwordToggle = document.getElementById("passwordToggle");
+  const toggleIcon     = document.getElementById("passwordToggleIcon");
+
+  if (passwordToggle && passwordField) {
+    passwordToggle.addEventListener("click", () => {
+      const isPassword = passwordField.type === "password";
+      passwordField.type = isPassword ? "text" : "password";
+      toggleIcon.className = isPassword ? "fa-regular fa-eye-slash" : "fa-regular fa-eye";
+    });
+  }
+</script>
 {% endblock %}

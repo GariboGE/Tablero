@@ -1,17 +1,68 @@
-{% extends "base.html" %} {% block top_title %}Enviar capturas por email{%
-endblock %} {% block top_subtitle %}Diparador para enviar capturas del dashboard
-por correo{% endblock %} {% block content %}
-<form method="POST">
-  <div class="mb-3">
-    <label class="form-label">Destinatarios</label>
-    <input
-      type="text"
-      name="recipients"
-      class="form-control"
-      placeholder="correo1@dominio.com"
-      required
-    />
+{% extends "base.html" %}
+
+{% block top_title %}Enviar capturas por email{% endblock %}
+{% block top_subtitle %}Disparador para enviar capturas del dashboard por correo{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:center; padding-top:8px;">
+  <div class="card" style="width:100%; max-width:500px;">
+
+    <div class="card-header-row" style="margin-bottom:20px;">
+      <div>
+        <div class="card-title" style="font-size:1rem;">
+          <i class="fa-solid fa-paper-plane" style="color:var(--primary); margin-right:8px;"></i>
+          Enviar reporte por correo
+        </div>
+        <div class="card-subtitle">Se adjuntarán capturas del dashboard y resumen diario</div>
+      </div>
+    </div>
+
+    <form method="POST" id="emailForm">
+      <div class="form-field mb-4">
+        <label for="recipients">
+          <i class="fa-solid fa-envelope" style="color:var(--text-muted); margin-right:4px; font-size:0.75rem;"></i>
+          Destinatarios
+        </label>
+        <input
+          type="text"
+          id="recipients"
+          name="recipients"
+          class="input-control"
+          placeholder="correo@dominio.com"
+          required
+          aria-describedby="recipientsHint"
+        />
+        <div class="text-muted" id="recipientsHint" style="font-size:0.72rem; margin-top:2px;">
+          Separa múltiples destinatarios con coma
+        </div>
+      </div>
+
+      <div id="emailFeedback" style="display:none;" class="mb-3"></div>
+
+      <button type="submit" class="btn btn-primary btn-block" id="emailSubmit">
+        <i class="fa-solid fa-paper-plane"></i>
+        <span id="emailBtnText">Enviar email</span>
+        <i class="fa-solid fa-spinner fa-spin" id="emailSpinner" style="display:none;"></i>
+      </button>
+    </form>
+
   </div>
-  <button type="submit" class="btn btn-primary">Enviar email</button>
-</form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const emailForm    = document.getElementById("emailForm");
+  const emailSubmit  = document.getElementById("emailSubmit");
+  const emailBtnText = document.getElementById("emailBtnText");
+  const emailSpinner = document.getElementById("emailSpinner");
+  const emailFeedback = document.getElementById("emailFeedback");
+
+  emailForm.addEventListener("submit", () => {
+    emailSubmit.disabled     = true;
+    emailSpinner.style.display = "inline-block";
+    emailBtnText.textContent  = "Enviando...";
+    emailFeedback.style.display = "none";
+  });
+</script>
 {% endblock %}

@@ -1,36 +1,115 @@
-{% extends "base.html" %} {% block top_title %}Carga de CSV{% endblock %} {%
-block top_subtitle %}Alimenta el dashboard con nuevos datos{% endblock %} {%
-block content %}
+{% extends "base.html" %}
 
-<div class="card" style="max-width: 620px; margin: 0 auto">
-  <div class="card-header-row">
-    <div class="card-title">Selecciona el archivo</div>
+{% block top_title %}Carga de CSV{% endblock %}
+{% block top_subtitle %}Alimenta el dashboard con nuevos datos{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:center; padding-top:8px;">
+  <div class="card" style="width:100%; max-width:620px;">
+
+    <div class="card-header-row" style="margin-bottom:20px;">
+      <div>
+        <div class="card-title" style="font-size:1rem;">
+          <i class="fa-solid fa-file-arrow-up" style="color:var(--primary); margin-right:8px;"></i>
+          Cargar archivo CSV
+        </div>
+        <div class="card-subtitle">Sube el archivo exportado del sistema LOS para actualizar los datos</div>
+      </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="csvForm" onsubmit="handleSubmit()">
+      {{ form.hidden_tag() }}
+
+      <!-- Drop Zone -->
+      <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Zona de carga de archivo CSV">
+        <i class="fa-solid fa-cloud-arrow-up drop-zone-icon"></i>
+        <div class="drop-zone-text">Arrastra el archivo aquí o haz clic para seleccionar</div>
+        <div class="drop-zone-hint">Formato aceptado: <strong>.csv</strong></div>
+        <div class="drop-zone-filename" id="dropZoneFilename">
+          <i class="fa-solid fa-file-csv" style="margin-right:4px;"></i>
+          <span id="dropZoneFilenameText"></span>
+        </div>
+      </div>
+
+      {{ form.csv(class="drop-zone-input", id="csvFileInput", accept=".csv") }}
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary btn-block" id="csvSubmit">
+          <i class="fa-solid fa-upload"></i>
+          <span id="csvBtnText">Subir archivo</span>
+          <i class="fa-solid fa-spinner fa-spin" id="csvSpinner" style="display:none;"></i>
+        </button>
+      </div>
+
+      <div id="csvLoading" class="mt-3 text-center text-muted" style="display:none; font-size:0.875rem;">
+        <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--primary); margin-right:6px;"></i>
+        Procesando archivo, por favor espera…
+      </div>
+    </form>
+
   </div>
-
-  {# Mensajes flash ya se renderizan en base.html, aquí solo extra si quieres #}
-
-  <form method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
-    {{ form.hidden_tag() }}
-
-    <div class="form-field mb-3">
-      {{ form.csv.label(class="") }} {{ form.csv(class="input-control") }}
-    </div>
-
-    <button type="submit" class="btn btn-primary">Subir archivo</button>
-
-    <div
-      id="loading-spinner"
-      class="mt-3 text-muted"
-      style="display: none; font-size: 0.9rem"
-    >
-      <span>Procesando archivo, por favor espera…</span>
-    </div>
-  </form>
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
 <script>
-  function showLoader() {
-    document.getElementById("loading-spinner").style.display = "block";
+  const dropZone         = document.getElementById("dropZone");
+  const fileInput        = document.getElementById("csvFileInput");
+  const filenameEl       = document.getElementById("dropZoneFilename");
+  const filenameTextEl   = document.getElementById("dropZoneFilenameText");
+  const csvSubmit        = document.getElementById("csvSubmit");
+  const csvBtnText       = document.getElementById("csvBtnText");
+  const csvSpinner       = document.getElementById("csvSpinner");
+  const csvLoading       = document.getElementById("csvLoading");
+
+  // Click on drop zone → open file picker
+  dropZone.addEventListener("click", () => fileInput.click());
+
+  dropZone.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); }
+  });
+
+  // Show filename when file is selected
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (file) {
+      filenameTextEl.textContent = file.name;
+      filenameEl.style.display = "block";
+      dropZone.style.borderColor = "var(--primary)";
+      dropZone.style.background = "#f0fafa";
+    }
+  });
+
+  // Drag & drop handlers
+  dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.classList.add("drag-over");
+  });
+
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("drag-over");
+  });
+
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+      filenameTextEl.textContent = file.name;
+      filenameEl.style.display = "block";
+      dropZone.style.borderColor = "var(--primary)";
+      dropZone.style.background = "#f0fafa";
+    }
+  });
+
+  function handleSubmit() {
+    csvSubmit.disabled       = true;
+    csvSpinner.style.display = "inline-block";
+    csvBtnText.textContent   = "Subiendo...";
+    csvLoading.style.display = "block";
   }
 </script>
 {% endblock %}

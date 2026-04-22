@@ -1,187 +1,194 @@
-{% extends "base.html" %} {% block top_title %}Resumen diario{% endblock %} {%
-block top_subtitle %}Resultados del día {{ data.fecha_actual }}{% endblock %} {%
-block content %}
+{% extends "base.html" %}
+
+{% block top_title %}Resumen diario{% endblock %}
+{% block top_subtitle %}Resultados del día {{ data.fecha_actual }}{% endblock %}
+
+{% block content %}
+
 <!-- Tarjetas principales -->
 <div class="grid grid-3 mb-4">
-  <div class="card">
+
+  <div class="card-metric">
     <div class="card-header-row">
       <div>
         <div class="card-title">Créditos del día</div>
         <div class="card-subtitle">Total de créditos desembolsados</div>
+      </div>
+      <div class="card-icon">
+        <i class="fa-solid fa-file-invoice-dollar"></i>
       </div>
     </div>
     <div class="metric-value">{{ data.total_creditos }}</div>
     <div class="metric-label text-muted">Créditos</div>
   </div>
 
-  <div class="card">
+  <div class="card-metric">
     <div class="card-header-row">
       <div>
         <div class="card-title">Monto total del día</div>
         <div class="card-subtitle">Suma de todos los créditos</div>
       </div>
+      <div class="card-icon">
+        <i class="fa-solid fa-sack-dollar"></i>
+      </div>
     </div>
-    <div class="metric-value"> 
-      <!--
-      <span
-        style="color: 
-        {% if data.total_monto >= data.meta_diaria_requerida %}
-            #22c55e
-        {% elif data.total_monto >= (data.meta_diaria_requerida * 0.65) %}
-            #f59e0b
-        {% else %}
-            #ef4444
-        {% endif %};
-        font-weight: 600;"
-      >
-      -->
-        ${{ "{:,.0f}".format(data.total_monto) if data.total_monto is defined
-        else "0" }} MXN
-      </span>
+    <div class="metric-value">
+      ${{ "{:,.0f}".format(data.total_monto) if data.total_monto is defined else "0" }}
     </div>
-    <!--
-    <div class="metric-label text-muted">
-      Meta de hoy: ${{ "{:,.0f}".format(data.meta_diaria_requerida) }} MXN
-    </div>
-    -->
+    <div class="metric-label text-muted">MXN</div>
   </div>
 
   <div class="card-soft">
     <div class="card-header-row">
       <div>
         <div class="card-title">Meta mensual</div>
-        <div class="card-subtitle">Progreso contra la meta</div>
+        <div class="card-subtitle">Progreso contra la meta del mes</div>
+      </div>
+      <div class="card-icon">
+        <i class="fa-solid fa-bullseye"></i>
       </div>
     </div>
     <div class="metric-value">
-      {{ data.avance_mensual|round(1) if data.avance_mensual is defined else 0
-      }}%
+      {{ data.avance_mensual|round(1) if data.avance_mensual is defined else 0 }}%
     </div>
     <div class="metric-label">
-      Acumulado:
-      <strong>${{ "{:,.0f}".format(data.monto_acumulado_mes) }}</strong> / Meta:
-      <strong>${{ "{:,.0f}".format(data.meta_mensual) }}</strong>
+      Acumulado: <strong>${{ "{:,.0f}".format(data.monto_acumulado_mes) }}</strong>
+      &nbsp;/&nbsp;Meta: <strong>${{ "{:,.0f}".format(data.meta_mensual) }}</strong>
     </div>
-    <div
-      class="mt-3"
-      style="
-        height: 8px;
-        background: #e5e7eb;
-        border-radius: 999px;
-        overflow: hidden;
-      "
-    >
+    <div class="progress-bar-track">
       <div
-        style="width: {{ data.avance_mensual|round(1) }}%; height: 100%; background: linear-gradient(90deg,#4f46e5,#22c55e);"
+        class="progress-bar-fill"
+        style="width: {{ [data.avance_mensual|round(1), 100]|min if data.avance_mensual is defined else 0 }}%;"
+        role="progressbar"
+        aria-valuenow="{{ data.avance_mensual|round(1) if data.avance_mensual is defined else 0 }}"
+        aria-valuemin="0"
+        aria-valuemax="100"
       ></div>
     </div>
   </div>
+
 </div>
 
 <!-- Desgloses -->
 <div class="grid grid-3">
+
   <!-- Sucursales -->
   <div class="card">
     <div class="card-header-row">
-      <div class="card-title">Monto por sucursal</div>
+      <div>
+        <div class="card-title">Monto por sucursal</div>
+      </div>
+      <i class="fa-solid fa-building text-muted" style="font-size:0.9rem"></i>
     </div>
-    <table class="table-simple">
-      <thead>
+    <div class="table-wrapper">
+      <table class="table-simple">
+        <thead>
           <tr>
-          <th>Sucursal</th>
-          <th>Monto</th>
-          <th>Créditos</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for s in data.sucursales %}
-        <tr>
-          <td>{{ s[0] or 'Sin sucursal' }}</td>
-          <td>${{ "{:,.0f}".format(s[1]) }}</td>
-          <td>{{ s[2] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            <th>Sucursal</th>
+            <th>Monto</th>
+            <th>Créditos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in data.sucursales %}
+          <tr>
+            <td>{{ s[0] or 'Sin sucursal' }}</td>
+            <td class="fw-600">${{ "{:,.0f}".format(s[1]) }}</td>
+            <td>{{ s[2] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Empresas -->
   <div class="card">
     <div class="card-header-row">
-      <div class="card-title">Monto por empresa</div>
+      <div>
+        <div class="card-title">Monto por empresa</div>
+      </div>
+      <i class="fa-solid fa-briefcase text-muted" style="font-size:0.9rem"></i>
     </div>
-    <table class="table-simple">
-      <thead>
-        <tr>
-          <th>Empresa</th>
-          <th>Monto</th>
-          <th>Créditos</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for e in data.empresas %}
-        <tr>
-          <td>{{ e[0] or 'Sin empresa' }}</td>
-          <td>${{ "{:,.0f}".format(e[1]) }}</td>
-          <td>{{ e[2] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Monto</th>
+            <th>Créditos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in data.empresas %}
+          <tr>
+            <td>{{ e[0] or 'Sin empresa' }}</td>
+            <td class="fw-600">${{ "{:,.0f}".format(e[1]) }}</td>
+            <td>{{ e[2] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Promotores -->
   <div class="card">
     <div class="card-header-row">
-      <div class="card-title">Monto por promotor</div>
+      <div>
+        <div class="card-title">Monto por promotor</div>
+      </div>
+      <i class="fa-solid fa-user-tie text-muted" style="font-size:0.9rem"></i>
     </div>
-    <table class="table-simple">
-      <thead>
-        <tr>
-          <th>Promotor</th>
-          <th>Monto</th>
-          <th>Créditos</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for p in data.promotores %}
-        <tr>
-          <td>{{ p[0] or 'Sin promotor' }}</td>
-          <td>${{ "{:,.0f}".format(p[1]) }}</td>
-          <td>{{ p[2] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Promotor</th>
+            <th>Monto</th>
+            <th>Créditos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in data.promotores %}
+          <tr>
+            <td>{{ p[0] or 'Sin promotor' }}</td>
+            <td class="fw-600">${{ "{:,.0f}".format(p[1]) }}</td>
+            <td>{{ p[2] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
+
 </div>
+
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
 async function checkUpdates() {
-    try {
-        const response = await fetch("/dashboard/last-update");
-        const data = await response.json();
+  try {
+    const response = await fetch("/dashboard/last-update");
+    const data = await response.json();
 
-        let lastKnownId = localStorage.getItem("last_credit_id");
+    let lastKnownId = localStorage.getItem("last_credit_id");
 
-        if (!lastKnownId) {
-            localStorage.setItem("last_credit_id", data.last_id);
-            return;
-        }
-
-        if (parseInt(data.last_id) !== parseInt(lastKnownId)) {
-            localStorage.setItem("last_credit_id", data.last_id);
-            window.location.reload();
-        }
-
-    } catch (e) {
-        console.error("Error checking updates", e);
+    if (!lastKnownId) {
+      localStorage.setItem("last_credit_id", data.last_id);
+      return;
     }
+
+    if (parseInt(data.last_id) !== parseInt(lastKnownId)) {
+      localStorage.setItem("last_credit_id", data.last_id);
+      window.location.reload();
+    }
+  } catch (e) {
+    console.error("Error checking updates", e);
+  }
 }
 
 setInterval(checkUpdates, 120000);
 </script>
-
 {% endblock %}

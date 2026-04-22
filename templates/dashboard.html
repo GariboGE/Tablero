@@ -6,6 +6,7 @@
 {% block extra_head %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    /* Multi-select */
     .ms-wrap { position: relative; }
     .ms-trigger {
       display: flex;
@@ -14,8 +15,12 @@
       cursor: pointer;
       user-select: none;
     }
-    .ms-trigger:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary-soft); }
-    .ms-arrow { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.15s; }
+    .ms-trigger:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(124,198,204,0.2);
+    }
+    .ms-arrow { font-size: 0.65rem; color: var(--text-muted); transition: transform 0.15s; }
     .ms-wrap.open .ms-arrow { transform: rotate(180deg); }
     .ms-dropdown {
       position: absolute;
@@ -23,7 +28,7 @@
       left: 0; right: 0;
       background: white;
       border: 1px solid var(--border-soft);
-      border-radius: 8px;
+      border-radius: var(--radius-input);
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       max-height: 200px;
       overflow-y: auto;
@@ -36,11 +41,16 @@
       gap: 8px;
       padding: 7px 12px;
       cursor: pointer;
-      font-size: 0.875rem;
+      font-size: 0.85rem;
       color: var(--text-main);
     }
     .ms-item:hover { background: var(--bg-body); }
-    .ms-item input[type=checkbox] { accent-color: var(--primary); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+    .ms-item input[type=checkbox] {
+      accent-color: var(--primary);
+      width: 14px; height: 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
     .ms-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
     .ms-tag {
       display: inline-flex;
@@ -63,19 +73,19 @@
 {% endblock %}
 
 {% block content %}
+
   <!-- Filtros -->
-  <div class="card mb-4" id="filtersCard">
+  <div class="card-soft mb-4" id="filtersCard">
     <div class="card-header-row">
       <div>
-        <div class="card-title">Filtros</div>
+        <div class="card-title"><i class="fa-solid fa-sliders" style="margin-right:6px;color:var(--primary)"></i>Filtros</div>
         <div class="card-subtitle">Ajusta el rango de fechas y segmentos</div>
       </div>
-
       <button type="button" class="btn btn-outline btn-sm" id="toggleFilters">
-        Ocultar
+        <i class="fa-solid fa-eye-slash" id="toggleIcon"></i>
+        <span id="toggleText">Ocultar</span>
       </button>
     </div>
-
 
     <div id="filtersContent">
       <form method="get" action="{{ url_for('dashboard.dashboard') }}">
@@ -208,32 +218,38 @@
         </div>
 
         <div class="mt-3 text-right">
-          <button type="submit" class="btn btn-primary">Aplicar filtros</button>
-          <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline" style="margin-left:8px;">Limpiar</a>
+          <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline" style="margin-right:8px;">
+            <i class="fa-solid fa-xmark"></i> Limpiar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i> Aplicar filtros
+          </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Tarjetas Totales -->
+  <!-- Tarjetas métricas totales -->
   <div class="grid grid-4 mb-3">
-    <div class="card">
+    <div class="card-metric">
       <div class="card-header-row">
         <div>
           <div class="card-title">Créditos nuevos</div>
           <div class="card-subtitle">En el periodo seleccionado</div>
         </div>
+        <div class="card-icon"><i class="fa-solid fa-plus"></i></div>
       </div>
       <div class="metric-value">{{ data.nuevos_creditos }}</div>
       <div class="metric-label text-muted">Créditos</div>
     </div>
 
-    <div class="card">
+    <div class="card-metric">
       <div class="card-header-row">
         <div>
           <div class="card-title">Créditos desembolsados</div>
-          <div class="card-subtitle">Activos</div>
+          <div class="card-subtitle">Activos en el periodo</div>
         </div>
+        <div class="card-icon"><i class="fa-solid fa-circle-check"></i></div>
       </div>
       <div class="metric-value">{{ data.total_desembolsados }}</div>
       <div class="metric-label text-muted">Créditos</div>
@@ -245,19 +261,21 @@
           <div class="card-title">Monto acumulado</div>
           <div class="card-subtitle">En el rango de fecha</div>
         </div>
+        <div class="card-icon"><i class="fa-solid fa-sack-dollar"></i></div>
       </div>
-      <div class="metric-value">${{ "{:,.2f}".format(data.monto_total) }}</div>
+      <div class="metric-value">${{ "{:,.0f}".format(data.monto_total) }}</div>
       <div class="metric-label text-muted">MXN</div>
     </div>
 
-    <div class="card">
+    <div class="card-metric">
       <div class="card-header-row">
         <div>
-          <div class="card-title">Monto de crédito promedio</div>
-          <div class="card-subtitle">Ticket promedio del periodo</div>
+          <div class="card-title">Ticket promedio</div>
+          <div class="card-subtitle">Monto promedio del periodo</div>
         </div>
+        <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
       </div>
-      <div class="metric-value">${{ "{:,.2f}".format(data.monto_promedio) }}</div>
+      <div class="metric-value">${{ "{:,.0f}".format(data.monto_promedio) }}</div>
       <div class="metric-label text-muted">MXN</div>
     </div>
   </div>
@@ -306,20 +324,20 @@
       <canvas id="empresasChart"></canvas>
     </div>
   </div>
+
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  const toggleBtn2 = document.getElementById("toggleFilters");
+  const toggleBtn2     = document.getElementById("toggleFilters");
   const filtersContent = document.getElementById("filtersContent");
+  const toggleIcon     = document.getElementById("toggleIcon");
+  const toggleText     = document.getElementById("toggleText");
 
   toggleBtn2.addEventListener("click", () => {
-    filtersContent.classList.toggle("filters-hidden");
-
-    toggleBtn2.textContent =
-      filtersContent.classList.contains("filters-hidden")
-        ? "Mostrar"
-        : "Ocultar";
+    const hidden = filtersContent.classList.toggle("filters-hidden");
+    toggleIcon.className = hidden ? "fa-solid fa-eye" : "fa-solid fa-eye-slash";
+    toggleText.textContent = hidden ? "Mostrar" : "Ocultar";
   });
 
   const charts = {
@@ -356,31 +374,8 @@
     return g;
   };
 
-  const chartConfig = (ctx, type, data, label, color1, color2=null, yAxis='y') => ({
-    type,
-    data: {
-      labels: data.labels,
-      datasets: [{
-        label,
-        data: data.values,
-        backgroundColor: color2 ? createGradient(ctx, color1, color2) : color1,
-        borderColor: "#4b5563",
-        borderWidth: 1,
-        borderRadius: 6,
-        tension: type === 'line' ? 0.35 : 0
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { [yAxis]: { beginAtZero: true } }
-    }
-  });
-
   // Promotores Monto - barras horizontales
-  const ctxPromotoresMonto =
-  document.getElementById("promotoresMontoChart").getContext("2d");
-
+  const ctxPromotoresMonto = document.getElementById("promotoresMontoChart").getContext("2d");
   new Chart(ctxPromotoresMonto, {
     type: 'bar',
     data: {
@@ -388,11 +383,7 @@
       datasets: [{
         label: "Monto colocado",
         data: charts.promotoresMonto.values,
-        backgroundColor: createGradient(
-          ctxPromotoresMonto,
-          charts.promotoresMonto.color1,
-          charts.promotoresMonto.color2
-        ),
+        backgroundColor: createGradient(ctxPromotoresMonto, charts.promotoresMonto.color1, charts.promotoresMonto.color2),
         borderRadius: 6
       }]
     },
@@ -403,30 +394,22 @@
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx =>
-              `$ ${ctx.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
+            label: ctx => `$ ${ctx.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
           }
         }
       },
       scales: {
         x: {
           beginAtZero: true,
-          ticks: {
-            callback: value =>
-              `$${value.toLocaleString('es-MX')}`
-          }
+          ticks: { callback: value => `$${value.toLocaleString('es-MX')}` }
         },
-        y: {
-          ticks: { autoSkip: false }
-        }
+        y: { ticks: { autoSkip: false } }
       }
     }
   });
 
-
   // Flujo - línea
   const ctxFlujo = document.getElementById("flujoChart").getContext("2d");
-
   new Chart(ctxFlujo, {
     type: 'line',
     data: {
@@ -435,28 +418,24 @@
         label: 'Flujo neto',
         data: charts.flujo.values,
         borderColor: charts.flujo.color1,
-        backgroundColor: "rgba(79,70,229,0.08)",
+        backgroundColor: "rgba(0,161,156,0.07)",
         tension: 0.35,
         fill: true
       }]
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
+      plugins: { legend: { display: false } },
       scales: {
         y: {
           beginAtZero: true,
-          ticks: {
-            callback: v => `$${v.toLocaleString('es-MX')}`
-          }
+          ticks: { callback: v => `$${v.toLocaleString('es-MX')}` }
         }
       }
     }
   });
 
-  // Empresas - top 8, créditos en eje X, monto en etiqueta
+  // Empresas - top 8
   const ctxEmpresas = document.getElementById("empresasChart").getContext("2d");
   const empresasTop = {
     labels: charts.empresas.labels.slice(0, 8).map((lbl, i) => [
@@ -466,7 +445,6 @@
     values: charts.empresas.values.slice(0, 8),
     montos: charts.empresas.montos.slice(0, 8)
   };
-
   new Chart(ctxEmpresas, {
     type: 'bar',
     data: {
@@ -504,12 +482,12 @@
 
   // Multi-select widgets
   function initMultiSelect(wrap) {
-    const trigger = wrap.querySelector('.ms-trigger');
-    const dropdown = wrap.querySelector('.ms-dropdown');
-    const tagsEl = wrap.querySelector('.ms-tags');
+    const trigger     = wrap.querySelector('.ms-trigger');
+    const dropdown    = wrap.querySelector('.ms-dropdown');
+    const tagsEl      = wrap.querySelector('.ms-tags');
     const triggerText = wrap.querySelector('.ms-trigger-text');
     const defaultLabel = triggerText.textContent;
-    const checkboxes = [...wrap.querySelectorAll('input[type=checkbox]')];
+    const checkboxes  = [...wrap.querySelectorAll('input[type=checkbox]')];
 
     function renderTags() {
       tagsEl.innerHTML = '';
@@ -565,7 +543,6 @@
 
   // Créditos por promotor - barras horizontales
   const ctxPromotores = document.getElementById("promotoresChart").getContext("2d");
-
   new Chart(ctxPromotores, {
     type: 'bar',
     data: {

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Credinspira Dashboard{% endblock %}</title>
 
-    <!-- Iconos (Font Awesome) -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -18,7 +17,9 @@
 
     {% block extra_head %}{% endblock %}
   </head>
-  <body>
+  <body class="{% block body_class %}{% endblock %}">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <div class="layout">
       <!-- SIDEBAR -->
       <aside class="sidebar" id="sidebar">
@@ -26,20 +27,21 @@
           <div class="sidebar-logo-icon">
             <i class="fa-solid fa-chart-line"></i>
           </div>
-          <span class="sidebar-logo-text">Credinspira</span>
+          <div class="sidebar-logo-info">
+            <div class="sidebar-logo-name">Credinspira</div>
+            <div class="sidebar-logo-subtitle">Credit Management</div>
+          </div>
         </div>
 
         {% if current_user.is_authenticated %}
-        <div>
+        <div class="sidebar-section">
           <div class="sidebar-section-title">Menú</div>
           <nav class="sidebar-nav">
             <a
               href="{{ url_for('daily.daily') }}"
               class="sidebar-link {% if request.endpoint == 'daily.daily' %}active{% endif %}"
             >
-              <span class="sidebar-link-icon"
-                ><i class="fa-regular fa-calendar-days"></i
-              ></span>
+              <span class="sidebar-link-icon"><i class="fa-regular fa-calendar-days"></i></span>
               <span class="sidebar-link-text">Resumen diario</span>
             </a>
 
@@ -47,43 +49,15 @@
               href="{{ url_for('dashboard.dashboard') }}"
               class="sidebar-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}"
             >
-              <span class="sidebar-link-icon"
-                ><i class="fa-solid fa-chart-pie"></i
-              ></span>
+              <span class="sidebar-link-icon"><i class="fa-solid fa-chart-pie"></i></span>
               <span class="sidebar-link-text">Dashboard</span>
             </a>
-
-            <!--
-
-
-            <a
-              href="{{ url_for('payments.payments') }}"
-              class="sidebar-link {% if request.endpoint == 'payments.payments' %}active{% endif %}"
-            >
-              <span class="sidebar-link-icon"
-                ><i class="fa-solid fa-hand-holding-dollar"></i
-              ></span>
-              <span class="sidebar-link-text">Cobranza</span>
-            </a>
-
-            <a
-              href="{{ url_for('accounting.accounting') }}"
-              class="sidebar-link {% if request.endpoint == 'accounting.accounting' %}active{% endif %}"
-            >
-              <span class="sidebar-link-icon"
-                ><i class="fa-solid fa-receipt"></i
-              ></span>
-              <span class="sidebar-link-text">Contabilidad</span>
-            </a>
-            -->
 
             <a
               href="{{ url_for('email.email') }}"
               class="sidebar-link {% if request.endpoint == 'email.email' %}active{% endif %}"
             >
-              <span class="sidebar-link-icon"
-                ><i class="fa-solid fa-envelope"></i
-              ></span>
+              <span class="sidebar-link-icon"><i class="fa-solid fa-envelope"></i></span>
               <span class="sidebar-link-text">Enviar por correo</span>
             </a>
 
@@ -91,32 +65,44 @@
               href="{{ url_for('etl.etl') }}"
               class="sidebar-link {% if request.endpoint == 'etl.etl' %}active{% endif %}"
             >
-              <span class="sidebar-link-icon"
-                ><i class="fa-solid fa-database"></i
-              ></span>
+              <span class="sidebar-link-icon"><i class="fa-solid fa-database"></i></span>
               <span class="sidebar-link-text">ETL / Carga CSV</span>
-            </a>
-
-            <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
-              <span class="sidebar-link-icon"
-                ><i class="fa-solid fa-right-from-bracket"></i
-              ></span>
-              <span class="sidebar-link-text">Salir</span>
             </a>
           </nav>
         </div>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-footer-inner">
+            <div class="sidebar-footer-user">
+              <div class="sidebar-footer-avatar">
+                {{ (current_user.name or 'U')[0]|upper }}
+              </div>
+              <div class="sidebar-footer-info">
+                <div class="sidebar-footer-name">{{ current_user.name or 'Usuario' }}</div>
+                <div class="sidebar-footer-role">Admin</div>
+              </div>
+            </div>
+            <a
+              href="{{ url_for('auth.logout') }}"
+              class="sidebar-footer-logout"
+              title="Cerrar sesión"
+              aria-label="Cerrar sesión"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
+          </div>
+        </div>
+
         {% else %}
-        <div>
+        <div class="sidebar-section">
           <div class="sidebar-section-title">Acceso</div>
           <nav class="sidebar-nav">
             <a
               href="{{ url_for('auth.login') }}"
               class="sidebar-link {% if request.endpoint == 'auth.login' %}active{% endif %}"
             >
-              <span class="sidebar-link-icon"
-                ><i class="fa-solid fa-key"></i
-              ></span>
-              <span class="sidebar-link-text">Login</span>
+              <span class="sidebar-link-icon"><i class="fa-solid fa-key"></i></span>
+              <span class="sidebar-link-text">Iniciar sesión</span>
             </a>
           </nav>
         </div>
@@ -131,155 +117,173 @@
               type="button"
               class="sidebar-toggle"
               id="sidebarToggle"
-              aria-label="Toggle sidebar"
+              aria-label="Alternar menú lateral"
             >
               <i class="fa-solid fa-bars"></i>
             </button>
             <div class="topbar-titles">
-              <div class="topbar-title">
-                {% block top_title %}Dashboard{% endblock %}
-              </div>
-              <div class="topbar-subtitle">
-                {% block top_subtitle %}Resumen de indicadores{% endblock %}
-              </div>
+              <div class="topbar-title">{% block top_title %}Dashboard{% endblock %}</div>
+              <div class="topbar-subtitle">{% block top_subtitle %}Resumen de indicadores{% endblock %}</div>
             </div>
           </div>
 
-          <!--
           {% if current_user.is_authenticated %}
           <div class="topbar-right">
-            <div class="user-pill">
-              <div class="user-avatar">
-                {{ (current_user.name or 'CU')[0]|upper if current_user is
-                defined else 'U' }}
-              </div>
-              <div>
-                <div style="font-size: 0.8rem">
-                  {{ current_user.name or 'Usuario' }}
-                </div>
-                <div class="text-muted" style="font-size: 0.75rem">Admin</div>
-              </div>
-            </div>
-          </div>
-          {% endif %}
-          -->
-          {% if current_user.is_authenticated %}
-          <div class="topbar-right">
-            <button id="runBotBtn" class="manual-trigger-btn">
+            <button
+              id="runBotBtn"
+              class="manual-trigger-btn"
+              title="Ejecutar el bot de descarga automática de CSV"
+              aria-label="Ejecutar Bot"
+            >
               <i class="fa-solid fa-play"></i>
               <span id="btnText">Ejecutar Bot</span>
-              <i
-                class="fa-solid fa-spinner fa-spin"
-                id="spinner"
-                style="display: none"
-              ></i>
+              <i class="fa-solid fa-spinner fa-spin" id="spinner" style="display:none"></i>
             </button>
-
             <div class="bot-info">
-              Última ejecución:
+              <span>Última ejecución:</span>
               <span id="lastRun">--</span>
             </div>
           </div>
           {% endif %}
         </header>
 
+        <!-- BREADCRUMBS -->
+        {% if current_user.is_authenticated %}
+        <div class="breadcrumb-bar">
+          <nav class="breadcrumbs" aria-label="Ruta de navegación">
+            <a href="{{ url_for('daily.daily') }}">
+              <i class="fa-solid fa-house" style="font-size:0.65rem"></i>
+              Inicio
+            </a>
+            {% if request.endpoint == 'dashboard.dashboard' %}
+              <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+              <span class="breadcrumb-active">Dashboard General</span>
+            {% elif request.endpoint == 'etl.etl' %}
+              <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+              <span class="breadcrumb-active">ETL / Carga CSV</span>
+            {% elif request.endpoint == 'email.email' %}
+              <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+              <span class="breadcrumb-active">Correo Electrónico</span>
+            {% endif %}
+          </nav>
+        </div>
+        {% endif %}
+
         <main class="main-scroll">
-          <main class="main-content">
-            {% with messages = get_flashed_messages(with_categories=true) %} {%
-            if messages %} {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %} {% endif %} {% endwith %} {% block content %}{%
-            endblock %}
-          </main>
+          <div class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }}">
+                    <i class="fa-solid
+                      {% if category == 'success' %}fa-circle-check
+                      {% elif category == 'danger' %}fa-circle-xmark
+                      {% elif category == 'warning' %}fa-triangle-exclamation
+                      {% else %}fa-circle-info{% endif %}">
+                    </i>
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+          </div>
         </main>
       </div>
     </div>
 
     <script>
-      // AJAX para manejar el estado del bot y su ejecución
-      const runBotBtn = document.getElementById("runBotBtn");
-      const spinner = document.getElementById("spinner");
-      const btnText = document.getElementById("btnText");
+      const runBotBtn  = document.getElementById("runBotBtn");
+      const spinner    = document.getElementById("spinner");
+      const btnText    = document.getElementById("btnText");
       const lastRunSpan = document.getElementById("lastRun");
 
       async function fetchStatus() {
-        const res = await fetch("/etl/bot-status");
-        const data = await res.json();
+        try {
+          const res  = await fetch("/etl/bot-status");
+          const data = await res.json();
 
-        if (data.running) {
-          runBotBtn.disabled = true;
-          spinner.style.display = "inline-block";
-          btnText.textContent = "Ejecutando...";
-        } else {
-          runBotBtn.disabled = false;
-          spinner.style.display = "none";
-          btnText.textContent = "Ejecutar Bot";
-        }
+          if (runBotBtn) {
+            if (data.running) {
+              runBotBtn.disabled = true;
+              if (spinner)  spinner.style.display  = "inline-block";
+              if (btnText)  btnText.textContent     = "Ejecutando...";
+            } else {
+              runBotBtn.disabled = false;
+              if (spinner)  spinner.style.display  = "none";
+              if (btnText)  btnText.textContent     = "Ejecutar Bot";
+            }
+          }
 
-        if (data.last_run) {
-          lastRunSpan.textContent = data.last_run;
-        }
+          if (data.last_run && lastRunSpan) {
+            lastRunSpan.textContent = data.last_run;
+          }
+        } catch (e) { /* silencioso en páginas sin autenticación */ }
       }
 
       runBotBtn?.addEventListener("click", async () => {
-        runBotBtn.disabled = true;
-        spinner.style.display = "inline-block";
-        btnText.textContent = "Ejecutando...";
+        if (runBotBtn) runBotBtn.disabled = true;
+        if (spinner)   spinner.style.display = "inline-block";
+        if (btnText)   btnText.textContent   = "Ejecutando...";
 
-        const res = await fetch("/etl/run-bot", {
+        await fetch("/etl/run-bot", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         });
 
         fetchStatus();
       });
 
-      // refrescar estado cada 10 segundos
       setInterval(fetchStatus, 10000);
       fetchStatus();
 
       // SIDEBAR TOGGLE
-      const sidebar = document.getElementById("sidebar");
+      const sidebar   = document.getElementById("sidebar");
       const toggleBtn = document.getElementById("sidebarToggle");
+      const overlay   = document.getElementById("sidebarOverlay");
+
+      const isMobile = () => window.innerWidth <= 768;
 
       toggleBtn.addEventListener("click", () => {
-        sidebar.classList.toggle("collapsed");
-
-        // Guardar estado en localStorage para recordar la preferencia
-        const isCollapsed = sidebar.classList.contains("collapsed");
-        try {
-          localStorage.setItem("sidebarCollapsed", isCollapsed ? "1" : "0");
-        } catch (e) {}
+        if (isMobile()) {
+          sidebar.classList.toggle("mobile-open");
+          overlay.classList.toggle("active");
+        } else {
+          sidebar.classList.toggle("collapsed");
+          try {
+            localStorage.setItem(
+              "sidebarCollapsed",
+              sidebar.classList.contains("collapsed") ? "1" : "0"
+            );
+          } catch (e) {}
+        }
       });
 
-      // Restaurar estado
+      overlay.addEventListener("click", () => {
+        sidebar.classList.remove("mobile-open");
+        overlay.classList.remove("active");
+      });
+
+      // Restaurar estado colapsado (solo escritorio)
       (function restoreSidebarState() {
+        if (isMobile()) return;
         try {
-          const value = localStorage.getItem("sidebarCollapsed");
-          if (value === "1") {
+          if (localStorage.getItem("sidebarCollapsed") === "1") {
             sidebar.classList.add("collapsed");
           }
         } catch (e) {}
       })();
 
+      // Refresco automático al inicio del día laboral
       function refreshAtWorkStart() {
-        const now = new Date();
-
+        const now    = new Date();
         const target = new Date();
         target.setHours(8, 20, 0, 0);
-        // Si ya pasaron las 9 hoy, programar para mañana
-        if (now >= target) {
-          target.setDate(target.getDate() + 1);
-        }
-
-        const msUntilRefresh = target - now;
-
+        if (now >= target) target.setDate(target.getDate() + 1);
         setTimeout(() => {
           console.log("Inicio de horario laboral, refrescando página...");
           window.location.reload();
-        }, msUntilRefresh);
+        }, target - now);
       }
 
       refreshAtWorkStart();
