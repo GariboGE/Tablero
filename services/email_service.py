@@ -44,11 +44,7 @@ def send_email(subject, recipients, body, html=None):
         f"http://localhost:5000/dashboard/dashboard"
         f"?fecha_inicio={fecha_inicio}"
         f"&fecha_fin={fecha_fin}"
-        f"&promotor="
-        f"&empresa="
-        f"&sucursal="
         f"&tipo_credito=NOMINA"
-        f"&clasificacion_credito="
     )
     
     capture_page(dashboard_url, "dashboard_nomina.png", 1920, 1500)
