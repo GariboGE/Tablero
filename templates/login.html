@@ -7,7 +7,6 @@
 
   <div class="login-logo">
     <div class="login-logo-icon">
-      <i class="fa-solid fa-chart-line"></i>
     </div>
     <div class="login-logo-name">Credinspira</div>
     <div class="login-logo-subtitle">Sistema de gestión de créditos</div>
@@ -34,13 +33,12 @@
           aria-label="Mostrar u ocultar contraseña"
           title="Mostrar/ocultar contraseña"
         >
-          <i class="fa-regular fa-eye" id="passwordToggleIcon"></i>
+          <span id="passwordToggleIcon">Ver</span>
         </button>
       </div>
     </div>
 
     <button type="submit" class="btn btn-primary btn-block" style="margin-top:4px;">
-      <i class="fa-solid fa-right-to-bracket"></i>
       Entrar
     </button>
   </form>
@@ -58,7 +56,7 @@
     passwordToggle.addEventListener("click", () => {
       const isPassword = passwordField.type === "password";
       passwordField.type = isPassword ? "text" : "password";
-      toggleIcon.className = isPassword ? "fa-regular fa-eye-slash" : "fa-regular fa-eye";
+      toggleIcon.textContent = isPassword ? "Ocultar" : "Ver";
     });
   }
 </script>

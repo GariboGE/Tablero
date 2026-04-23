@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Credinspira Dashboard{% endblock %}</title>
 
+    {% if current_user.is_authenticated %}
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    {% endif %}
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -37,36 +41,39 @@
         <div class="sidebar-section">
           <div class="sidebar-section-title">Menú</div>
           <nav class="sidebar-nav">
-            <a
-              href="{{ url_for('daily.daily') }}"
-              class="sidebar-link {% if request.endpoint == 'daily.daily' %}active{% endif %}"
-            >
+            <a href="{{ url_for('daily.daily') }}"
+               class="sidebar-link {% if request.endpoint == 'daily.daily' %}active{% endif %}">
               <span class="sidebar-link-icon"><i class="fa-regular fa-calendar-days"></i></span>
               <span class="sidebar-link-text">Resumen diario</span>
             </a>
-
-            <a
-              href="{{ url_for('dashboard.dashboard') }}"
-              class="sidebar-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}"
-            >
+            <a href="{{ url_for('dashboard.dashboard') }}"
+               class="sidebar-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}">
               <span class="sidebar-link-icon"><i class="fa-solid fa-chart-pie"></i></span>
               <span class="sidebar-link-text">Dashboard</span>
             </a>
-
-            <a
-              href="{{ url_for('email.email') }}"
-              class="sidebar-link {% if request.endpoint == 'email.email' %}active{% endif %}"
-            >
+            <a href="{{ url_for('email.email') }}"
+               class="sidebar-link {% if request.endpoint == 'email.email' %}active{% endif %}">
               <span class="sidebar-link-icon"><i class="fa-solid fa-envelope"></i></span>
               <span class="sidebar-link-text">Enviar por correo</span>
             </a>
-
-            <a
-              href="{{ url_for('etl.etl') }}"
-              class="sidebar-link {% if request.endpoint == 'etl.etl' %}active{% endif %}"
-            >
+            <a href="{{ url_for('etl.etl') }}"
+               class="sidebar-link {% if request.endpoint == 'etl.etl' %}active{% endif %}">
               <span class="sidebar-link-icon"><i class="fa-solid fa-database"></i></span>
               <span class="sidebar-link-text">ETL / Carga CSV</span>
+            </a>
+          </nav>
+
+          <div class="sidebar-section-title" style="margin-top:16px;">Administración</div>
+          <nav class="sidebar-nav">
+            <a href="{{ url_for('admin.goals') }}"
+               class="sidebar-link {% if request.endpoint == 'admin.goals' %}active{% endif %}">
+              <span class="sidebar-link-icon"><i class="fa-solid fa-bullseye"></i></span>
+              <span class="sidebar-link-text">Metas mensuales</span>
+            </a>
+            <a href="{{ url_for('admin.recipients') }}"
+               class="sidebar-link {% if request.endpoint in ['admin.recipients', 'admin.toggle_recipient', 'admin.delete_recipient'] %}active{% endif %}">
+              <span class="sidebar-link-icon"><i class="fa-solid fa-address-book"></i></span>
+              <span class="sidebar-link-text">Destinatarios</span>
             </a>
           </nav>
         </div>
@@ -75,19 +82,17 @@
           <div class="sidebar-footer-inner">
             <div class="sidebar-footer-user">
               <div class="sidebar-footer-avatar">
-                {{ (current_user.name or 'U')[0]|upper }}
+                {{ (current_user.name or current_user.username or 'U')[0]|upper }}
               </div>
               <div class="sidebar-footer-info">
-                <div class="sidebar-footer-name">{{ current_user.name or 'Usuario' }}</div>
+                <div class="sidebar-footer-name">{{ current_user.name or current_user.username or 'Usuario' }}</div>
                 <div class="sidebar-footer-role">Admin</div>
               </div>
             </div>
-            <a
-              href="{{ url_for('auth.logout') }}"
-              class="sidebar-footer-logout"
-              title="Cerrar sesión"
-              aria-label="Cerrar sesión"
-            >
+            <a href="{{ url_for('auth.logout') }}"
+               class="sidebar-footer-logout"
+               title="Cerrar sesión"
+               aria-label="Cerrar sesión">
               <i class="fa-solid fa-right-from-bracket"></i>
             </a>
           </div>
@@ -97,10 +102,8 @@
         <div class="sidebar-section">
           <div class="sidebar-section-title">Acceso</div>
           <nav class="sidebar-nav">
-            <a
-              href="{{ url_for('auth.login') }}"
-              class="sidebar-link {% if request.endpoint == 'auth.login' %}active{% endif %}"
-            >
+            <a href="{{ url_for('auth.login') }}"
+               class="sidebar-link {% if request.endpoint == 'auth.login' %}active{% endif %}">
               <span class="sidebar-link-icon"><i class="fa-solid fa-key"></i></span>
               <span class="sidebar-link-text">Iniciar sesión</span>
             </a>
@@ -113,13 +116,8 @@
       <div class="main">
         <header class="topbar">
           <div class="topbar-left">
-            <button
-              type="button"
-              class="sidebar-toggle"
-              id="sidebarToggle"
-              aria-label="Alternar menú lateral"
-            >
-              <i class="fa-solid fa-bars"></i>
+            <button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="Alternar menú lateral">
+              &#9776;
             </button>
             <div class="topbar-titles">
               <div class="topbar-title">{% block top_title %}Dashboard{% endblock %}</div>
@@ -129,15 +127,11 @@
 
           {% if current_user.is_authenticated %}
           <div class="topbar-right">
-            <button
-              id="runBotBtn"
-              class="manual-trigger-btn"
-              title="Ejecutar el bot de descarga automática de CSV"
-              aria-label="Ejecutar Bot"
-            >
-              <i class="fa-solid fa-play"></i>
+            <button id="runBotBtn" class="manual-trigger-btn"
+                    title="Ejecutar el bot de descarga automática de CSV"
+                    aria-label="Ejecutar Bot">
               <span id="btnText">Ejecutar Bot</span>
-              <i class="fa-solid fa-spinner fa-spin" id="spinner" style="display:none"></i>
+              <span id="spinner" style="display:none">…</span>
             </button>
             <div class="bot-info">
               <span>Última ejecución:</span>
@@ -151,19 +145,26 @@
         {% if current_user.is_authenticated %}
         <div class="breadcrumb-bar">
           <nav class="breadcrumbs" aria-label="Ruta de navegación">
-            <a href="{{ url_for('daily.daily') }}">
-              <i class="fa-solid fa-house" style="font-size:0.65rem"></i>
-              Inicio
-            </a>
+            <a href="{{ url_for('daily.daily') }}">Inicio</a>
             {% if request.endpoint == 'dashboard.dashboard' %}
-              <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+              <span class="breadcrumb-sep">›</span>
               <span class="breadcrumb-active">Dashboard General</span>
             {% elif request.endpoint == 'etl.etl' %}
-              <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+              <span class="breadcrumb-sep">›</span>
               <span class="breadcrumb-active">ETL / Carga CSV</span>
             {% elif request.endpoint == 'email.email' %}
-              <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+              <span class="breadcrumb-sep">›</span>
               <span class="breadcrumb-active">Correo Electrónico</span>
+            {% elif request.endpoint == 'admin.goals' %}
+              <span class="breadcrumb-sep">›</span>
+              <span class="breadcrumb-active">Administración</span>
+              <span class="breadcrumb-sep">›</span>
+              <span class="breadcrumb-active">Metas Mensuales</span>
+            {% elif request.endpoint in ['admin.recipients', 'admin.toggle_recipient'] %}
+              <span class="breadcrumb-sep">›</span>
+              <span class="breadcrumb-active">Administración</span>
+              <span class="breadcrumb-sep">›</span>
+              <span class="breadcrumb-active">Destinatarios</span>
             {% endif %}
           </nav>
         </div>
@@ -175,12 +176,6 @@
               {% if messages %}
                 {% for category, message in messages %}
                   <div class="alert alert-{{ category }}">
-                    <i class="fa-solid
-                      {% if category == 'success' %}fa-circle-check
-                      {% elif category == 'danger' %}fa-circle-xmark
-                      {% elif category == 'warning' %}fa-triangle-exclamation
-                      {% else %}fa-circle-info{% endif %}">
-                    </i>
                     {{ message }}
                   </div>
                 {% endfor %}
@@ -193,6 +188,7 @@
     </div>
 
     <script>
+      const csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content;
       const runBotBtn  = document.getElementById("runBotBtn");
       const spinner    = document.getElementById("spinner");
       const btnText    = document.getElementById("btnText");
@@ -201,6 +197,7 @@
       async function fetchStatus() {
         try {
           const res  = await fetch("/etl/bot-status");
+          if (!res.ok) return;
           const data = await res.json();
 
           if (runBotBtn) {
@@ -218,7 +215,7 @@
           if (data.last_run && lastRunSpan) {
             lastRunSpan.textContent = data.last_run;
           }
-        } catch (e) { /* silencioso en páginas sin autenticación */ }
+        } catch (e) { /* silencioso */ }
       }
 
       runBotBtn?.addEventListener("click", async () => {
@@ -226,10 +223,15 @@
         if (spinner)   spinner.style.display = "inline-block";
         if (btnText)   btnText.textContent   = "Ejecutando...";
 
-        await fetch("/etl/run-bot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
+        try {
+          await fetch("/etl/run-bot", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrfToken || "",
+            },
+          });
+        } catch (e) { /* silencioso */ }
 
         fetchStatus();
       });
@@ -264,7 +266,6 @@
         overlay.classList.remove("active");
       });
 
-      // Restaurar estado colapsado (solo escritorio)
       (function restoreSidebarState() {
         if (isMobile()) return;
         try {
@@ -274,18 +275,13 @@
         } catch (e) {}
       })();
 
-      // Refresco automático al inicio del día laboral
       function refreshAtWorkStart() {
         const now    = new Date();
         const target = new Date();
         target.setHours(8, 20, 0, 0);
         if (now >= target) target.setDate(target.getDate() + 1);
-        setTimeout(() => {
-          console.log("Inicio de horario laboral, refrescando página...");
-          window.location.reload();
-        }, target - now);
+        setTimeout(() => window.location.reload(), target - now);
       }
-
       refreshAtWorkStart();
     </script>
 

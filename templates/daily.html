@@ -3,6 +3,10 @@
 {% block top_title %}Resumen diario{% endblock %}
 {% block top_subtitle %}Resultados del día {{ data.fecha_actual }}{% endblock %}
 
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
 {% block content %}
 
 <!-- Tarjetas principales -->
@@ -14,9 +18,6 @@
         <div class="card-title">Créditos del día</div>
         <div class="card-subtitle">Total de créditos desembolsados</div>
       </div>
-      <div class="card-icon">
-        <i class="fa-solid fa-file-invoice-dollar"></i>
-      </div>
     </div>
     <div class="metric-value">{{ data.total_creditos }}</div>
     <div class="metric-label text-muted">Créditos</div>
@@ -27,9 +28,6 @@
       <div>
         <div class="card-title">Monto total del día</div>
         <div class="card-subtitle">Suma de todos los créditos</div>
-      </div>
-      <div class="card-icon">
-        <i class="fa-solid fa-sack-dollar"></i>
       </div>
     </div>
     <div class="metric-value">
@@ -43,9 +41,6 @@
       <div>
         <div class="card-title">Meta mensual</div>
         <div class="card-subtitle">Progreso contra la meta del mes</div>
-      </div>
-      <div class="card-icon">
-        <i class="fa-solid fa-bullseye"></i>
       </div>
     </div>
     <div class="metric-value">
@@ -69,26 +64,29 @@
 
 </div>
 
+<!-- Tendencia 30 días -->
+<div class="card mb-4">
+  <div class="card-header-row">
+    <div>
+      <div class="card-title">
+        Tendencia — últimos 30 días (NOMINA)
+      </div>
+      <div class="card-subtitle">Monto diario colocado vs. histórico del mes</div>
+    </div>
+  </div>
+  <canvas id="trendChart" style="max-height:200px;"></canvas>
+</div>
+
 <!-- Desgloses -->
 <div class="grid grid-3">
 
-  <!-- Sucursales -->
   <div class="card">
     <div class="card-header-row">
-      <div>
-        <div class="card-title">Monto por sucursal</div>
-      </div>
-      <i class="fa-solid fa-building text-muted" style="font-size:0.9rem"></i>
+      <div><div class="card-title">Monto por sucursal</div></div>
     </div>
     <div class="table-wrapper">
       <table class="table-simple">
-        <thead>
-          <tr>
-            <th>Sucursal</th>
-            <th>Monto</th>
-            <th>Créditos</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Sucursal</th><th>Monto</th><th>Créditos</th></tr></thead>
         <tbody>
           {% for s in data.sucursales %}
           <tr>
@@ -102,23 +100,13 @@
     </div>
   </div>
 
-  <!-- Empresas -->
   <div class="card">
     <div class="card-header-row">
-      <div>
-        <div class="card-title">Monto por empresa</div>
-      </div>
-      <i class="fa-solid fa-briefcase text-muted" style="font-size:0.9rem"></i>
+      <div><div class="card-title">Monto por empresa</div></div>
     </div>
     <div class="table-wrapper">
       <table class="table-simple">
-        <thead>
-          <tr>
-            <th>Empresa</th>
-            <th>Monto</th>
-            <th>Créditos</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Empresa</th><th>Monto</th><th>Créditos</th></tr></thead>
         <tbody>
           {% for e in data.empresas %}
           <tr>
@@ -132,23 +120,13 @@
     </div>
   </div>
 
-  <!-- Promotores -->
   <div class="card">
     <div class="card-header-row">
-      <div>
-        <div class="card-title">Monto por promotor</div>
-      </div>
-      <i class="fa-solid fa-user-tie text-muted" style="font-size:0.9rem"></i>
+      <div><div class="card-title">Monto por promotor</div></div>
     </div>
     <div class="table-wrapper">
       <table class="table-simple">
-        <thead>
-          <tr>
-            <th>Promotor</th>
-            <th>Monto</th>
-            <th>Créditos</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Promotor</th><th>Monto</th><th>Créditos</th></tr></thead>
         <tbody>
           {% for p in data.promotores %}
           <tr>
@@ -168,27 +146,62 @@
 
 {% block extra_scripts %}
 <script>
-async function checkUpdates() {
-  try {
-    const response = await fetch("/dashboard/last-update");
-    const data = await response.json();
+  // Tendencia 30 días
+  const trendCtx = document.getElementById("trendChart").getContext("2d");
+  const trendLabels = {{ data.trend_labels|tojson|safe }};
+  const trendValues = {{ data.trend_values|tojson|safe }};
 
-    let lastKnownId = localStorage.getItem("last_credit_id");
+  const trendGrad = trendCtx.createLinearGradient(0, 0, 0, 200);
+  trendGrad.addColorStop(0, "rgba(0,161,156,0.4)");
+  trendGrad.addColorStop(1, "rgba(0,161,156,0.02)");
 
-    if (!lastKnownId) {
-      localStorage.setItem("last_credit_id", data.last_id);
-      return;
+  new Chart(trendCtx, {
+    type: "bar",
+    data: {
+      labels: trendLabels,
+      datasets: [{
+        label: "Monto colocado",
+        data: trendValues,
+        backgroundColor: trendGrad,
+        borderColor: "#00a19c",
+        borderWidth: 1.5,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `$${ctx.raw.toLocaleString("es-MX", { maximumFractionDigits: 0 })}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: v => `$${(v/1000).toFixed(0)}k` }
+        },
+        x: { ticks: { maxRotation: 45 } }
+      }
     }
+  });
 
-    if (parseInt(data.last_id) !== parseInt(lastKnownId)) {
-      localStorage.setItem("last_credit_id", data.last_id);
-      window.location.reload();
-    }
-  } catch (e) {
-    console.error("Error checking updates", e);
+  // Auto-refresh cuando hay créditos nuevos
+  async function checkUpdates() {
+    try {
+      const response = await fetch("/dashboard/last-update");
+      if (!response.ok) return;
+      const data = await response.json();
+      let lastKnownId = localStorage.getItem("last_credit_id");
+      if (!lastKnownId) { localStorage.setItem("last_credit_id", data.last_id); return; }
+      if (parseInt(data.last_id) !== parseInt(lastKnownId)) {
+        localStorage.setItem("last_credit_id", data.last_id);
+        window.location.reload();
+      }
+    } catch (e) {}
   }
-}
-
-setInterval(checkUpdates, 120000);
+  setInterval(checkUpdates, 120000);
 </script>
 {% endblock %}

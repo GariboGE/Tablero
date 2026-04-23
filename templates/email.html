@@ -4,24 +4,55 @@
 {% block top_subtitle %}Disparador para enviar capturas del dashboard por correo{% endblock %}
 
 {% block content %}
-<div style="display:flex; justify-content:center; padding-top:8px;">
-  <div class="card" style="width:100%; max-width:500px;">
+<div class="grid grid-2 mb-4" style="align-items:start;">
 
+  <!-- Formulario de envío -->
+  <div class="card">
     <div class="card-header-row" style="margin-bottom:20px;">
       <div>
         <div class="card-title" style="font-size:1rem;">
-          <i class="fa-solid fa-paper-plane" style="color:var(--primary); margin-right:8px;"></i>
-          Enviar reporte por correo
+          Enviar reporte
         </div>
         <div class="card-subtitle">Se adjuntarán capturas del dashboard y resumen diario</div>
       </div>
     </div>
 
     <form method="POST" id="emailForm">
+      <!-- Destinatarios guardados -->
+      {% if db_recipients %}
+      <div class="form-field mb-3">
+        <label style="margin-bottom:8px; display:block;">
+          Destinatarios guardados
+        </label>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          {% for dest in db_recipients %}
+          <label style="display:flex; align-items:center; gap:8px; font-size:0.875rem;
+                        {% if not dest.activo %}opacity:0.45;{% endif %}
+                        cursor:pointer;">
+            <input
+              type="checkbox"
+              name="recipient_ids"
+              value="{{ dest.id }}"
+              {% if dest.activo %}checked{% endif %}
+              {% if not dest.activo %}disabled{% endif %}
+              style="accent-color:var(--primary); width:15px; height:15px; flex-shrink:0;"
+            >
+            <span>
+              {% if dest.nombre %}<strong>{{ dest.nombre }}</strong> — {% endif %}
+              {{ dest.email }}
+              {% if not dest.activo %}<span class="badge badge-warning" style="margin-left:4px;">inactivo</span>{% endif %}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="divider"></div>
+      {% endif %}
+
+      <!-- Destinatarios adicionales manuales -->
       <div class="form-field mb-4">
         <label for="recipients">
-          <i class="fa-solid fa-envelope" style="color:var(--text-muted); margin-right:4px; font-size:0.75rem;"></i>
-          Destinatarios
+          {% if db_recipients %}Destinatarios adicionales{% else %}Destinatarios{% endif %}
         </label>
         <input
           type="text"
@@ -29,24 +60,43 @@
           name="recipients"
           class="input-control"
           placeholder="correo@dominio.com"
-          required
           aria-describedby="recipientsHint"
         />
         <div class="text-muted" id="recipientsHint" style="font-size:0.72rem; margin-top:2px;">
-          Separa múltiples destinatarios con coma
+          Separa múltiples correos con coma
         </div>
       </div>
 
-      <div id="emailFeedback" style="display:none;" class="mb-3"></div>
-
       <button type="submit" class="btn btn-primary btn-block" id="emailSubmit">
-        <i class="fa-solid fa-paper-plane"></i>
         <span id="emailBtnText">Enviar email</span>
-        <i class="fa-solid fa-spinner fa-spin" id="emailSpinner" style="display:none;"></i>
+        <span id="emailSpinner" style="display:none;">…</span>
       </button>
     </form>
-
   </div>
+
+  <!-- Info panel -->
+  <div class="card-soft">
+    <div class="card-header-row" style="margin-bottom:14px;">
+      <div class="card-title" style="font-size:0.95rem;">
+        ¿Qué incluye el reporte?
+      </div>
+    </div>
+    <ul style="list-style:none; display:flex; flex-direction:column; gap:10px; font-size:0.875rem; color:var(--text-muted);">
+      <li>Captura del dashboard de nómina (mes actual)</li>
+      <li>Captura del resumen diario</li>
+      <li>Fecha y hora de envío</li>
+    </ul>
+
+    <div class="divider" style="margin:16px 0;"></div>
+
+    <div style="font-size:0.8rem; color:var(--text-muted);">
+      Administra la lista de destinatarios en
+      <a href="{{ url_for('admin.recipients') }}" style="color:var(--primary); font-weight:600;">
+        Administración → Destinatarios
+      </a>
+    </div>
+  </div>
+
 </div>
 {% endblock %}
 
@@ -56,13 +106,11 @@
   const emailSubmit  = document.getElementById("emailSubmit");
   const emailBtnText = document.getElementById("emailBtnText");
   const emailSpinner = document.getElementById("emailSpinner");
-  const emailFeedback = document.getElementById("emailFeedback");
 
   emailForm.addEventListener("submit", () => {
-    emailSubmit.disabled     = true;
+    emailSubmit.disabled       = true;
     emailSpinner.style.display = "inline-block";
-    emailBtnText.textContent  = "Enviando...";
-    emailFeedback.style.display = "none";
+    emailBtnText.textContent   = "Enviando...";
   });
 </script>
 {% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block top_title %}Destinatarios de email{% endblock %}
+{% block top_subtitle %}Gestiona la lista de contactos para los reportes automáticos{% endblock %}
+
+{% block content %}
+<div class="grid grid-2 mb-4" style="align-items:start;">
+
+  <!-- Formulario agregar -->
+  <div class="card">
+    <div class="card-header-row" style="margin-bottom:20px;">
+      <div>
+        <div class="card-title" style="font-size:1rem;">
+          Agregar destinatario
+        </div>
+        <div class="card-subtitle">Los destinatarios activos se pre-seleccionan al enviar reportes.</div>
+      </div>
+    </div>
+
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <input type="hidden" name="accion" value="agregar">
+
+      <div class="form-field mb-3">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" name="email" class="input-control"
+               placeholder="nombre@empresa.com" required />
+      </div>
+
+      <div class="form-field mb-4">
+        <label for="nombre">Nombre (opcional)</label>
+        <input type="text" id="nombre" name="nombre" class="input-control"
+               placeholder="Juan Pérez" />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">
+        Agregar destinatario
+      </button>
+    </form>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="card-soft">
+    <div class="card-header-row" style="margin-bottom:14px;">
+      <div class="card-title" style="font-size:0.95rem;">
+        Resumen
+      </div>
+    </div>
+
+    {% set activos = destinatarios | selectattr('activo', 'equalto', true) | list %}
+    {% set inactivos = destinatarios | selectattr('activo', 'equalto', false) | list %}
+
+    <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px;">
+      <div style="text-align:center; padding:16px; background:white; border-radius:10px; box-shadow:var(--shadow-card);">
+        <div class="metric-value" style="font-size:1.8rem; color:var(--primary);">{{ activos|length }}</div>
+        <div class="metric-label text-muted">Activos</div>
+      </div>
+      <div style="text-align:center; padding:16px; background:white; border-radius:10px; box-shadow:var(--shadow-card);">
+        <div class="metric-value" style="font-size:1.8rem; color:var(--text-muted);">{{ inactivos|length }}</div>
+        <div class="metric-label text-muted">Inactivos</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin:16px 0;"></div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">
+      Los destinatarios inactivos no reciben reportes pero se conservan en la lista.
+    </div>
+  </div>
+
+</div>
+
+<!-- Lista de destinatarios -->
+<div class="card">
+  <div class="card-header-row" style="margin-bottom:16px;">
+    <div>
+      <div class="card-title" style="font-size:1rem;">
+        Lista de destinatarios
+      </div>
+      <div class="card-subtitle">{{ destinatarios|length }} contacto(s) registrado(s)</div>
+    </div>
+  </div>
+
+  {% if destinatarios %}
+  <div class="table-wrapper">
+    <table class="table-simple">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th style="text-align:center;">Estado</th>
+          <th style="text-align:center;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dest in destinatarios %}
+        <tr>
+          <td class="fw-600">{{ dest.nombre or '—' }}</td>
+          <td style="font-size:0.85rem;">{{ dest.email }}</td>
+          <td style="text-align:center;">
+            {% if dest.activo %}
+              <span class="badge badge-success">Activo</span>
+            {% else %}
+              <span class="badge badge-warning">Inactivo</span>
+            {% endif %}
+          </td>
+          <td style="text-align:center;">
+            <div style="display:inline-flex; gap:6px;">
+              <!-- Toggle activo/inactivo -->
+              <form method="POST" action="{{ url_for('admin.toggle_recipient', id=dest.id) }}" style="display:inline;">
+                {{ form.hidden_tag() }}
+                <button type="submit"
+                        class="btn btn-outline btn-sm"
+                        title="{% if dest.activo %}Desactivar{% else %}Activar{% endif %}">
+                  {% if dest.activo %}Desactivar{% else %}Activar{% endif %}
+                </button>
+              </form>
+
+              <!-- Eliminar -->
+              <form method="POST" action="{{ url_for('admin.delete_recipient', id=dest.id) }}"
+                    style="display:inline;"
+                    onsubmit="return confirm('¿Eliminar {{ dest.email }}?')">
+                {{ form.hidden_tag() }}
+                <button type="submit"
+                        class="btn btn-outline btn-sm"
+                        style="color:var(--danger); border-color:#fca5a5;"
+                        title="Eliminar">
+                  Eliminar
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-muted text-center" style="padding:32px 0; font-size:0.875rem;">
+    Sin destinatarios. Agrega el primero usando el formulario.
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

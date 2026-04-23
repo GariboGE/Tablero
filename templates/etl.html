@@ -4,29 +4,26 @@
 {% block top_subtitle %}Alimenta el dashboard con nuevos datos{% endblock %}
 
 {% block content %}
-<div style="display:flex; justify-content:center; padding-top:8px;">
-  <div class="card" style="width:100%; max-width:620px;">
+<div class="grid grid-2 mb-4" style="align-items:start;">
 
+  <!-- Drop zone -->
+  <div class="card">
     <div class="card-header-row" style="margin-bottom:20px;">
       <div>
         <div class="card-title" style="font-size:1rem;">
-          <i class="fa-solid fa-file-arrow-up" style="color:var(--primary); margin-right:8px;"></i>
           Cargar archivo CSV
         </div>
-        <div class="card-subtitle">Sube el archivo exportado del sistema LOS para actualizar los datos</div>
+        <div class="card-subtitle">Sube el archivo exportado del sistema LOS</div>
       </div>
     </div>
 
     <form method="POST" enctype="multipart/form-data" id="csvForm" onsubmit="handleSubmit()">
       {{ form.hidden_tag() }}
 
-      <!-- Drop Zone -->
       <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Zona de carga de archivo CSV">
-        <i class="fa-solid fa-cloud-arrow-up drop-zone-icon"></i>
         <div class="drop-zone-text">Arrastra el archivo aquí o haz clic para seleccionar</div>
         <div class="drop-zone-hint">Formato aceptado: <strong>.csv</strong></div>
         <div class="drop-zone-filename" id="dropZoneFilename">
-          <i class="fa-solid fa-file-csv" style="margin-right:4px;"></i>
           <span id="dropZoneFilenameText"></span>
         </div>
       </div>
@@ -35,61 +32,108 @@
 
       <div class="mt-4">
         <button type="submit" class="btn btn-primary btn-block" id="csvSubmit">
-          <i class="fa-solid fa-upload"></i>
           <span id="csvBtnText">Subir archivo</span>
-          <i class="fa-solid fa-spinner fa-spin" id="csvSpinner" style="display:none;"></i>
+          <span id="csvSpinner" style="display:none;">…</span>
         </button>
       </div>
 
       <div id="csvLoading" class="mt-3 text-center text-muted" style="display:none; font-size:0.875rem;">
-        <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--primary); margin-right:6px;"></i>
         Procesando archivo, por favor espera…
       </div>
     </form>
-
   </div>
+
+  <!-- Registro de actividad reciente -->
+  <div class="card">
+    <div class="card-header-row" style="margin-bottom:16px;">
+      <div>
+        <div class="card-title" style="font-size:1rem;">
+          Actividad reciente
+        </div>
+        <div class="card-subtitle">Últimas ejecuciones del bot y cargas manuales</div>
+      </div>
+    </div>
+
+    {% if logs %}
+    <div class="table-wrapper">
+      <table class="table-simple">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th style="text-align:right;">Ins.</th>
+            <th style="text-align:right;">Act.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td style="white-space:nowrap; font-size:0.78rem;">
+              {{ log.timestamp.strftime('%d/%m %H:%M') }}
+            </td>
+            <td>
+              {% if log.tipo == 'scheduler' %}
+                <span class="badge badge-info">Auto</span>
+              {% elif log.tipo == 'csv_manual' %}
+                <span class="badge badge-warning">CSV</span>
+              {% else %}
+                <span class="badge badge-info">Manual</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if log.estado == 'exito' %}
+                <span class="badge badge-success">OK</span>
+              {% else %}
+                <span class="badge badge-danger">Error</span>
+              {% endif %}
+            </td>
+            <td style="text-align:right; font-size:0.8rem;">{{ log.insertados }}</td>
+            <td style="text-align:right; font-size:0.8rem;">{{ log.actualizados }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-muted text-center" style="padding:24px 0; font-size:0.875rem;">
+      Sin actividad registrada
+    </div>
+    {% endif %}
+  </div>
+
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  const dropZone         = document.getElementById("dropZone");
-  const fileInput        = document.getElementById("csvFileInput");
-  const filenameEl       = document.getElementById("dropZoneFilename");
-  const filenameTextEl   = document.getElementById("dropZoneFilenameText");
-  const csvSubmit        = document.getElementById("csvSubmit");
-  const csvBtnText       = document.getElementById("csvBtnText");
-  const csvSpinner       = document.getElementById("csvSpinner");
-  const csvLoading       = document.getElementById("csvLoading");
+  const dropZone       = document.getElementById("dropZone");
+  const fileInput      = document.getElementById("csvFileInput");
+  const filenameEl     = document.getElementById("dropZoneFilename");
+  const filenameTextEl = document.getElementById("dropZoneFilenameText");
+  const csvSubmit      = document.getElementById("csvSubmit");
+  const csvBtnText     = document.getElementById("csvBtnText");
+  const csvSpinner     = document.getElementById("csvSpinner");
+  const csvLoading     = document.getElementById("csvLoading");
 
-  // Click on drop zone → open file picker
   dropZone.addEventListener("click", () => fileInput.click());
-
   dropZone.addEventListener("keydown", e => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); }
   });
 
-  // Show filename when file is selected
+  function showFile(file) {
+    filenameTextEl.textContent = file.name;
+    filenameEl.style.display = "block";
+    dropZone.style.borderColor = "var(--primary)";
+    dropZone.style.background  = "#f0fafa";
+  }
+
   fileInput.addEventListener("change", () => {
-    const file = fileInput.files[0];
-    if (file) {
-      filenameTextEl.textContent = file.name;
-      filenameEl.style.display = "block";
-      dropZone.style.borderColor = "var(--primary)";
-      dropZone.style.background = "#f0fafa";
-    }
+    if (fileInput.files[0]) showFile(fileInput.files[0]);
   });
 
-  // Drag & drop handlers
-  dropZone.addEventListener("dragover", e => {
-    e.preventDefault();
-    dropZone.classList.add("drag-over");
-  });
-
-  dropZone.addEventListener("dragleave", () => {
-    dropZone.classList.remove("drag-over");
-  });
-
+  dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
   dropZone.addEventListener("drop", e => {
     e.preventDefault();
     dropZone.classList.remove("drag-over");
@@ -98,10 +142,7 @@
       const dt = new DataTransfer();
       dt.items.add(file);
       fileInput.files = dt.files;
-      filenameTextEl.textContent = file.name;
-      filenameEl.style.display = "block";
-      dropZone.style.borderColor = "var(--primary)";
-      dropZone.style.background = "#f0fafa";
+      showFile(file);
     }
   });
 

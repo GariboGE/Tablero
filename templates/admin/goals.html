@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block top_title %}Metas mensuales{% endblock %}
+{% block top_subtitle %}Configura los objetivos de colocación por sucursal{% endblock %}
+
+{% block content %}
+<div class="grid grid-2 mb-4" style="align-items:start;">
+
+  <!-- Formulario agregar / actualizar -->
+  <div class="card">
+    <div class="card-header-row" style="margin-bottom:20px;">
+      <div>
+        <div class="card-title" style="font-size:1rem;">
+          Agregar / actualizar meta
+        </div>
+        <div class="card-subtitle">Si ya existe una entrada para sucursal+mes+año, se actualiza el monto.</div>
+      </div>
+    </div>
+
+    <form method="POST">
+      {{ form.hidden_tag() }}
+
+      <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="form-field" style="grid-column:1/-1;">
+          <label for="sucursal">Sucursal</label>
+          <input type="text" id="sucursal" name="sucursal" class="input-control"
+                 placeholder="Tijuana / Mexicali / Ensenada" required />
+        </div>
+
+        <div class="form-field">
+          <label for="mes">Mes</label>
+          <select id="mes" name="mes" class="select-control" required>
+            {% for m in range(1, 13) %}
+            <option value="{{ m }}" {% if m == mes_actual %}selected{% endif %}>
+              {{ ['', 'Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][m] }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="anio">Año</label>
+          <input type="number" id="anio" name="anio" class="input-control"
+                 value="{{ anio_actual }}" min="2020" max="2099" required />
+        </div>
+
+        <div class="form-field" style="grid-column:1/-1;">
+          <label for="monto">Monto (MXN)</label>
+          <input type="number" id="monto" name="monto" class="input-control"
+                 placeholder="10000000" step="0.01" min="0" required />
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary btn-block">
+          Guardar meta
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Resumen del mes actual -->
+  <div class="card-soft">
+    <div class="card-header-row" style="margin-bottom:14px;">
+      <div class="card-title" style="font-size:0.95rem;">
+        Mes actual — {{ mes_actual }}/{{ anio_actual }}
+      </div>
+    </div>
+
+    {% set metas_mes = metas | selectattr('mes', 'equalto', mes_actual) | selectattr('anio', 'equalto', anio_actual) | list %}
+    {% if metas_mes %}
+      {% set total_mes = metas_mes | map(attribute='monto') | sum %}
+      <div class="mb-3">
+        <div class="metric-value" style="font-size:1.5rem;">${{ "{:,.0f}".format(total_mes) }}</div>
+        <div class="metric-label text-muted">Meta total combinada</div>
+      </div>
+      <table class="table-simple">
+        <thead><tr><th>Sucursal</th><th style="text-align:right;">Monto</th></tr></thead>
+        <tbody>
+          {% for m in metas_mes %}
+          <tr>
+            <td>{{ m.sucursal }}</td>
+            <td style="text-align:right;" class="fw-600">${{ "{:,.0f}".format(m.monto) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="text-muted" style="font-size:0.875rem;">
+        No hay metas configuradas para este mes. Se usan los valores por defecto del sistema.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Importar desde archivo -->
+<div class="card mb-4">
+  <div class="card-header-row" style="margin-bottom:20px;">
+    <div>
+      <div class="card-title" style="font-size:1rem;">
+        Importar metas desde archivo
+      </div>
+      <div class="card-subtitle">
+        Sube un .xlsx o .csv con columnas: <strong>Sucursal, Enero, Febrero, …, Diciembre</strong>.
+        Las entradas existentes para el año seleccionado se sobreescriben.
+      </div>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('admin.upload_goals') }}" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <div class="grid" style="grid-template-columns:1fr auto; gap:12px; align-items:end;">
+      <div class="form-field">
+        <label for="archivo">Archivo (.xlsx / .csv)</label>
+        <input type="file" id="archivo" name="archivo" class="input-control"
+               accept=".xlsx,.csv" required />
+      </div>
+
+      <div class="form-field">
+        <label for="anio_upload">Año</label>
+        <input type="number" id="anio_upload" name="anio_upload" class="input-control"
+               value="{{ anio_actual }}" min="2020" max="2099" required
+               style="width:100px;" />
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary">
+        Importar metas
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Historial completo de metas -->
+<div class="card">
+  <div class="card-header-row" style="margin-bottom:16px;">
+    <div>
+      <div class="card-title" style="font-size:1rem;">
+        Historial de metas
+      </div>
+      <div class="card-subtitle">Todas las metas registradas</div>
+    </div>
+  </div>
+
+  {% if metas %}
+  <div class="table-wrapper">
+    <table class="table-simple">
+      <thead>
+        <tr>
+          <th>Sucursal</th>
+          <th>Mes</th>
+          <th>Año</th>
+          <th style="text-align:right;">Monto (MXN)</th>
+          <th style="text-align:center;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in metas %}
+        <tr>
+          <td class="fw-600">{{ m.sucursal }}</td>
+          <td>{{ ['', 'Ene','Feb','Mar','Abr','May','Jun',
+                   'Jul','Ago','Sep','Oct','Nov','Dic'][m.mes] }}</td>
+          <td>{{ m.anio }}</td>
+          <td style="text-align:right;">${{ "{:,.0f}".format(m.monto) }}</td>
+          <td style="text-align:center;">
+            <form method="POST" action="{{ url_for('admin.delete_goal', id=m.id) }}"
+                  style="display:inline;"
+                  onsubmit="return confirm('¿Eliminar meta de {{ m.sucursal }} {{ m.mes }}/{{ m.anio }}?')">
+              {{ form.hidden_tag() }}
+              <button type="submit" class="btn btn-outline btn-sm" style="color:var(--danger); border-color:#fca5a5;"
+                      title="Eliminar">
+                Eliminar
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-muted text-center" style="padding:32px 0; font-size:0.875rem;">
+    Sin metas registradas. Agrega la primera usando el formulario.
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

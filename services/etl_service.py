@@ -1,6 +1,9 @@
+import logging
 import pandas as pd
 from models.models import Credit, RelatedCredit, Provider, Disposition, db
 from sqlalchemy.exc import IntegrityError
+
+logger = logging.getLogger(__name__)
 
 
 def parse_date(val):
@@ -14,7 +17,7 @@ def parse_date(val):
 
 def parse_time(val):
     try:
-        return pd.to_datetime(val, errors = "coerce").time() if pd.notna(val) else None
+        return pd.to_datetime(val, errors="coerce").time() if pd.notna(val) else None
     except Exception:
         return None
 
@@ -22,27 +25,21 @@ def parse_time(val):
 def import_csv_to_db(df: pd.DataFrame, session=None):
     """
     Inserta los registros de un DataFrame (CSV) en la base de datos.
-    Si hay errores de unicidad (duplicados), los omite y continúa.
-    Retorna una tupla: (insertados, omitidos)
+    Retorna una tupla: (insertados, omitidos, actualizados)
     """
-
     session = session or db.session
     inserted, skipped, updated = 0, 0, 0
 
-    # Eliminar la última fila si parece ser de totales
     last_row = df.tail(1)
-    
     contains_totals = last_row.astype(str).apply(
         lambda col: col.str.contains("TOTALES", case=False, na=False)
     ).values.any()
 
-
     if contains_totals:
-        print("⚠️ Fila de totales detectada y eliminada.")
+        logger.info("Fila de totales detectada y eliminada.")
         df = df.iloc[:-1]
 
     for _, row in df.iterrows():
-        
         try:
             numero_credito = row.get("No. Crédito")
             nuevo_estatus = row.get("Estatus del crédito")
@@ -52,24 +49,14 @@ def import_csv_to_db(df: pd.DataFrame, session=None):
             ).first()
 
             if existing_credit:
-
-                # Si el estatus cambió, actualizar
                 if existing_credit.estatus_credito != nuevo_estatus:
-
                     existing_credit.estatus_credito = nuevo_estatus
                     updated += 1
-
-                    # Si quieres marcarlo explícitamente como ignorado
-                    if nuevo_estatus == "Cancelado":
-                        existing_credit.estatus_credito = "Cancelado"
-
                     session.commit()
-                    print(f"🔄 Crédito {numero_credito} actualizado a estatus {nuevo_estatus}")
-
+                    logger.debug("Crédito %s actualizado a estatus %s", numero_credito, nuevo_estatus)
                 skipped += 1
                 continue
 
-            # --- SI NO EXISTE, CREAR NUEVO ---
             credit = Credit(
                 tipo_credito=row.get("Tipo de Crédito"),
                 fecha_desembolso=parse_date(row.get("Fecha Desembolso")),
@@ -102,19 +89,14 @@ def import_csv_to_db(df: pd.DataFrame, session=None):
             session.commit()
             inserted += 1
 
-        except Exception as e:
-            session.rollback()
-            skipped += 1
-            print(f"[ERROR] Registro omitido: {e}")
-
             # Créditos relacionados
             for i in range(1, 6):
                 ref = row.get(f"Referencia Crédito {i}")
                 monto = row.get(f"Monto a liquidar.{i}", row.get(f"Monto a liquidar {i}"))
                 if pd.notna(ref) or pd.notna(monto):
                     credit.related_credits.append(RelatedCredit(
-                        referencia_credito = ref,
-                        monto_liquidar = monto
+                        referencia_credito=ref,
+                        monto_liquidar=monto
                     ))
 
             # Proveedores
@@ -123,8 +105,8 @@ def import_csv_to_db(df: pd.DataFrame, session=None):
                 monto = row.get(f"Monto.{i}", row.get(f"Monto {i}"))
                 if pd.notna(prov) or pd.notna(monto):
                     credit.providers.append(Provider(
-                        nombre_proveedor = prov,
-                        monto = monto
+                        nombre_proveedor=prov,
+                        monto=monto
                     ))
 
             # Disposiciones
@@ -133,22 +115,22 @@ def import_csv_to_db(df: pd.DataFrame, session=None):
                 monto = row.get(f"Monto_disp.{i}", row.get(f"Monto {i}"))
                 if pd.notna(ref) or pd.notna(monto):
                     credit.dispositions.append(Disposition(
-                        referencia_disposicion = ref,
-                        monto = monto
+                        referencia_disposicion=ref,
+                        monto=monto
                     ))
 
-            # Intentar guardar el registro
-            session.add(credit)
             session.commit()
-            inserted += 1
 
         except IntegrityError:
             session.rollback()
             skipped += 1
-        except Exception as e:
+        except Exception as exc:
             session.rollback()
             skipped += 1
-            print(f"[ERROR] Registro omitido por error inesperado: {e}")
+            logger.error("Registro omitido por error inesperado: %s", exc)
 
-    print(f"✅ Datos importados correctamente. Insertados: {inserted}, Actualizados: {updated}, Omitidos: {skipped}")
+    logger.info(
+        "Importación completada — Insertados: %d | Actualizados: %d | Omitidos: %d",
+        inserted, updated, skipped
+    )
     return inserted, skipped, updated
